@@ -48,7 +48,6 @@ public class getDev {
         devSaver.setFile(new File(devPath));
         devSaver.writeBatch();
 
-        System.out.println("División completada: Train → " + trainData.numInstances() +
-                " instancias, Dev → " + devData.numInstances());
+        System.out.println("División completada: Train → " + trainData.numInstances() + " instancias, Dev → " + devData.numInstances());
     }
 }
