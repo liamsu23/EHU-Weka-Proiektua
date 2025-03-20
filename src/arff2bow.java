@@ -3,60 +3,59 @@ import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.StringToWordVector;
-import weka.filters.unsupervised.instance.SparseToNonSparse;
 
 import java.io.File;
 
 public class arff2bow {
-    public static void main(String[] args) {
-        // Rutas de archivos
-        String inTrain = "data/train_Zikina.arff";
-        String outTrainBOW = "data/trainBOW.arff";
-        String outHiztegia = "data/hiztegia.arff";
+    public static void main(String[] args) throws Exception {
+        // Verificar que se han pasado los argumentos correctamente
+        if (args.length < 3) {
+            System.out.println("Erabilera: java arff2bow <train_raw.arff> <train_BoW.arff> <hiztegia.txt>");
+            return;
+        }
 
         try {
-            // Cargar el archivo ARFF de entrada
-            DataSource source = new DataSource(inTrain);
-            Instances data = source.getDataSet();
-            data.setClassIndex(data.numAttributes()-1);
+            // Asignar los parámetros de entrada
+            String trainRawPath = args[0];  // Ruta al archivo .arff original
+            String trainBoWPath = args[1];  // Ruta para guardar el archivo BoW procesado
+            String dictionaryPath = args[2];  // Ruta para guardar el diccionario de palabras
 
-            // Usar el filtro StringToWordVector (Bag of Words)
-            StringToWordVector bowFilter = new StringToWordVector();
-            bowFilter.setInputFormat(data); // Especificar el formato de entrada
-            bowFilter.setLowerCaseTokens(true); // Convertir a minúsculas
-            bowFilter.setOutputWordCounts(true); // Usar frecuencias de palabras (no solo presencia/ausencia)
-            bowFilter.setWordsToKeep(2000); // Limitar el número de palabras en el vocabulario
+            // Cargar el archivo de datos crudos
+            DataSource source = new DataSource(trainRawPath);
+            Instances trainData = source.getDataSet();
 
-            // Aplicar el filtro para convertir el texto en BoW
-            Instances bowData = Filter.useFilter(data, bowFilter);
+            // Establecer el índice de la clase (si no está definido)
+            if (trainData.classIndex() == -1) {
+                trainData.setClassIndex(trainData.numAttributes()-1);  // Se asume que la primera columna es la clase
+            }
 
-            // Convertir de Sparse a Non-Sparse
-            SparseToNonSparse sparseFilter = new SparseToNonSparse();
-            sparseFilter.setInputFormat(bowData);
-            Instances bowNonSparseData = Filter.useFilter(bowData, sparseFilter);
+            // Configurar el filtro StringToWordVector para convertir los textos en Bag of Words (BoW)
+            StringToWordVector filter = new StringToWordVector();
+            // Ez da hiztegia murriztu behar, beraz hurrengo lerroa ez da beharrezkoa
+            //filter.setWordsToKeep(1000);  // Limitar a las 1000 palabras más frecuentes
+            filter.setOutputWordCounts(false);  // No contar la frecuencia de palabras
+            filter.setLowerCaseTokens(true);  // Convertir toodo a minúsculas
+            filter.setIDFTransform(false);  // No usar IDF (Inverse Document Frequency)
+            filter.setTFTransform(false);  // No usar TF (Term Frequency)
+            filter.setDictionaryFileToSaveTo(new File(dictionaryPath));  // Guardar el diccionario de palabras
+            filter.setInputFormat(trainData);  // Establecer el formato de entrada del filtro
 
-            // Pasarle al cliente el diccionario vacio
-            Instances train_hutsik = new Instances(bowNonSparseData);
-            train_hutsik.delete();
+            // Aplicar el filtro para obtener el conjunto de datos en formato BoW
+            Instances trainBoW = Filter.useFilter(trainData, filter);
 
-            // Hiztegia gorde
-            ArffSaver arffSaver1 = new ArffSaver();
-            arffSaver1.setFile(new File(outHiztegia));
-            arffSaver1.setInstances(train_hutsik);
-            arffSaver1.writeBatch();
+            // Guardar el conjunto de datos BoW usando ArffSaver
+            ArffSaver saver = new ArffSaver();
+            saver.setInstances(trainBoW);  // Asignar el dataset procesado
+            saver.setFile(new File(trainBoWPath));  // Especificar el archivo de salida
+            saver.writeBatch();  // Guardar el archivo en formato ARFF
 
-            // Guardar el resultado en un nuevo archivo ARFF
-            ArffSaver arffSaver2 = new ArffSaver();
-            arffSaver2.setFile(new File(outTrainBOW));
-            arffSaver2.setInstances(train_hutsik);
-            arffSaver2.writeBatch();
-
-            System.out.println("Archivo BOW generado exitosamente en: " + outTrainBOW);
-            System.out.println("Archivo diccionario generado exitosamente en: " + outHiztegia);
-
+            System.out.println("BOW artxiboa gordeta: " + trainBoWPath);
+            System.out.println("Hiztegia gordeta: " + dictionaryPath);
 
         } catch (Exception e) {
-            e.printStackTrace(); // Manejo de errores
+            // Capturar cualquier excepción y mostrar un mensaje de error
+            e.printStackTrace();
+            System.out.println("ERROR");
         }
     }
 }
