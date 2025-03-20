@@ -86,7 +86,7 @@ public class getARFF {
 
             // Definir los atributos con sus tipos correctos
             arffWriter.write("@ATTRIBUTE ID NUMERIC\n");
-            arffWriter.write("@ATTRIBUTE Age_Group {Adult, Child, Neonate}\n");
+            arffWriter.write("@ATTRIBUTE Module {Adult, Child, Neonate}\n");
             arffWriter.write("@ATTRIBUTE Age NUMERIC\n");
             arffWriter.write("@ATTRIBUTE Sex {1, 2}\n");
 
@@ -96,10 +96,10 @@ public class getARFF {
                 String[] row = csvData.get(i);
                 places.add(row[4]); // Columna Place
             }
-            arffWriter.write("@ATTRIBUTE Place {" + String.join(",", places) + "}\n");
+            arffWriter.write("@ATTRIBUTE Site {" + String.join(",", places) + "}\n");
 
             // Definir Narrative como STRING (se envolverá en comillas)
-            arffWriter.write("@ATTRIBUTE Narrative STRING\n");
+            arffWriter.write("@ATTRIBUTE Open_Response STRING\n");
 
             // Obtener todas las categorías generales únicas para Cause_of_Death
             Set<String> generalCategories = new HashSet<>();

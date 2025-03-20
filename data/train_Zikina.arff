@@ -1,11 +1,11 @@
 @RELATION muertes_causas
 
 @ATTRIBUTE ID NUMERIC
-@ATTRIBUTE Age_Group {Adult, Child, Neonate}
+@ATTRIBUTE Module {Adult, Child, Neonate}
 @ATTRIBUTE Age NUMERIC
 @ATTRIBUTE Sex {1, 2}
-@ATTRIBUTE Place {Pemba,Dar,Mexico,UP,Bohol,AP}
-@ATTRIBUTE Narrative STRING
+@ATTRIBUTE Site {Pemba,Dar,Mexico,UP,Bohol,AP}
+@ATTRIBUTE Open_Response STRING
 @ATTRIBUTE Cause_of_Death {epilepsy,other_cancers,hemorrhagic_fever,other_cardiovascular_diseases,other_infectious_diseases,colorectal_cancer,stillbirth,malaria,drowning,prostate_cancer,birth_asphyxia,copd,homicide,stomach_cancer,acute_myocardial_infarction,falls,pneumonia,congenital_malformation,violent_death,road_traffic,other_non_communicable_diseases,aids,other_digestive_diseases,cirrhosis,renal_failure,poisonings,suicide,meningitis,lung_cancer,asthma,stroke,tb,breast_cancer,fires,cervical_cancer,encephalitis,bite_of_venomous_animal,preterm_delivery,leukemia_lymphomas,meningitis_sepsis,esophageal_cancer,diarrhea_dysentery,other_injuries,diabetes,measles,sepsis,maternal,other_defined_causes_of_child_deaths}
 
 @DATA
