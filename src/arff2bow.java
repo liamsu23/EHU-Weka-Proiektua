@@ -26,13 +26,12 @@ public class arff2bow {
 
             // Establecer el índice de la clase (si no está definido)
             if (trainData.classIndex() == -1) {
-                trainData.setClassIndex(trainData.numAttributes()-1);  // Se asume que la primera columna es la clase
+                trainData.setClassIndex(trainData.numAttributes()-1);
             }
 
             // Configurar el filtro StringToWordVector para convertir los textos en Bag of Words (BoW)
             StringToWordVector filter = new StringToWordVector();
-            // Ez da hiztegia murriztu behar, beraz hurrengo lerroa ez da beharrezkoa
-            //filter.setWordsToKeep(1000);  // Limitar a las 1000 palabras más frecuentes
+            // Ez da hiztegia murriztu behar, beraz hurrengo lerroa ez da beharrezkoa //filter.setWordsToKeep(1000);  // Limitar a las 1000 palabras más frecuentes
             filter.setOutputWordCounts(false);  // No contar la frecuencia de palabras
             filter.setLowerCaseTokens(true);  // Convertir toodo a minúsculas
             filter.setIDFTransform(false);  // No usar IDF (Inverse Document Frequency)
