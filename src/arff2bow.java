@@ -39,6 +39,12 @@ public class arff2bow {
             filter.setDictionaryFileToSaveTo(new File(dictionaryPath));  // Guardar el diccionario de palabras
             filter.setInputFormat(trainData);  // Establecer el formato de entrada del filtro
 
+            /*
+            --> TF-IDF erabili nahi bada:
+                    filter.setIDFTransform(true);
+                    filter.setTFTransform(true);
+            * */
+
             // Aplicar el filtro para obtener el conjunto de datos en formato BoW
             Instances trainBoW = Filter.useFilter(trainData, filter);
 
