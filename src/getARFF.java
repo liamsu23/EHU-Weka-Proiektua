@@ -11,8 +11,8 @@ public class getARFF {
 
     public static void main(String[] args) throws IOException {
         // Cargar los datos
-        String csvFilePath = "hasierako_datuak_CSV/cleaned_PHMRC_VAI_redacted_free_text.train.csv"; // Ruta del archivo CSV
-        String arffFilePath = "data/train_Zikina.arff"; // Ruta del archivo ARFF de salida
+        String csvFilePath = args[0]; // Ruta del archivo CSV
+        String arffFilePath = args[1]; // Ruta del archivo ARFF de salida
         // Cargar el mapeo de etiquetas
         Map<String, String> labelMapping = loadLabelMapping(); // Nombre de la relación ARFF
 
@@ -46,15 +46,26 @@ public class getARFF {
             for (int i = 1; i < csvData.size(); i++) {
                 String[] row = csvData.get(i);
                 String specificLabel = row[6].trim().toLowerCase(); // Columna Cause_of_Death
-                String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel); // Mapeo
-                generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9]", "_");
 
-                row[6] = generalLabel; // Actualiza la causa de muerte
-                row[5] = "\"" + cleanNarrative(row[5]) + "\""; // Limpia el texto
+                // Si la clase es "NA" o "na", la convertimos en "?"
+                if (specificLabel.equalsIgnoreCase("na")) {
+                    row[6] = "?";
+                } else {
+                    // Aplicamos el mapeo si existe, si no, usamos el mismo valor
+                    String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel);
+
+                    // Reemplazar solo caracteres especiales en la clase, pero MANTENER "?"
+                    generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9?]", "_");
+
+                    row[6] = generalLabel; // Actualizar la causa de muerte
+                }
+
+                row[5] = "\"" + cleanNarrative(row[5]) + "\""; // Limpiar la narrativa
 
                 // Escribe la fila en el ARFF
                 arffWriter.write(String.join(",", row) + "\n");
             }
+
 
             // Crear los archivos
             arffWriter.close();
@@ -148,11 +159,11 @@ public class getARFF {
         try {
             fw.write("@RELATION muertes_causas\n\n");
             fw.write("@ATTRIBUTE ID NUMERIC\n");
-            fw.write("@ATTRIBUTE Age_Group {Adult, Child, Neonate}\n");
+            fw.write("@ATTRIBUTE Module {Adult, Child, Neonate}\n");
             fw.write("@ATTRIBUTE Age NUMERIC\n");
             fw.write("@ATTRIBUTE Sex {1, 2}\n");
-            fw.write("@ATTRIBUTE Place {" + String.join(",", places) + "}\n");
-            fw.write("@ATTRIBUTE Narrative STRING\n");
+            fw.write("@ATTRIBUTE Site {" + String.join(",", places) + "}\n");
+            fw.write("@ATTRIBUTE Open_Response STRING\n");
             fw.write("@ATTRIBUTE Cause_of_Death {" + String.join(",", generalCategories) + "}\n\n");
             fw.write("@DATA\n");
         }
