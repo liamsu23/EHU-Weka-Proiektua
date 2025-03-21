@@ -66,8 +66,7 @@ public class getARFF {
                 arffWriter.write(String.join(",", row) + "\n");
             }
 
-
-            // Crear los archivos
+            // Cerrar los archivos
             arffWriter.close();
             reader.close();
 
@@ -79,7 +78,6 @@ public class getARFF {
         catch (CsvException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     // Cargar la agrupación de causas de muerte
