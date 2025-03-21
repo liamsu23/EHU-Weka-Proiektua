@@ -31,10 +31,6 @@ public class getDev {
         filter.setInvertSelection(true); // Ahora seleccionamos el 80% restante como train
         Instances trainData = weka.filters.Filter.useFilter(data, filter);
 
-        // Reemplazar la clase en `dev.arff` con `?`
-        for (int i = 0; i < devData.numInstances(); i++) {
-            devData.instance(i).setMissing(devData.classIndex());
-        }
 
         // Guardar train_split.arff
         ArffSaver trainSaver = new ArffSaver();
