@@ -29,6 +29,11 @@ public class arff2bow {
                 trainData.setClassIndex(trainData.numAttributes()-1);
             }
 
+
+
+            //TODO Bektorizazio mota eta dimentsioarekin jolastu esperminetuak egiteko (cuando acabemos tdoo si tenemos tiempo)
+            // (lo mismo con parametro ekorketa)
+
             // Configurar el filtro StringToWordVector para convertir los textos en Bag of Words (BoW)
             StringToWordVector filter = new StringToWordVector();
             // Ez da hiztegia murriztu behar, beraz hurrengo lerroa ez da beharrezkoa //filter.setWordsToKeep(1000);  // Limitar a las 1000 palabras más frecuentes
