@@ -4,15 +4,15 @@ import weka.core.converters.ArffSaver;
 import weka.filters.supervised.instance.StratifiedRemoveFolds;
 import java.io.File;
 
-public class getDev {
+public class getSplit {
     public static void main(String[] args) throws Exception {
         // Archivo de entrada y salida
-        String inputPath = "data/train_RAW.arff";  // Dataset original
-        String trainPath = "data/train_split_RAW.arff"; // Archivo de entrenamiento
-        String devPath = "data/dev_RAW.arff"; // Archivo de validación
+        String inTrainPath = args[0];  // Dataset original
+        String outTrainSplitPath = args[1]; // Archivo de entrenamiento
+        String outDevSplitPath = args[2]; // Archivo de validación
 
         // Cargar dataset
-        DataSource source = new DataSource(inputPath);
+        DataSource source = new DataSource(inTrainPath);
         Instances data = source.getDataSet();
 
         // Establecer el índice de la clase (último atributo)
@@ -35,13 +35,13 @@ public class getDev {
         // Guardar train_split.arff
         ArffSaver trainSaver = new ArffSaver();
         trainSaver.setInstances(trainData);
-        trainSaver.setFile(new File(trainPath));
+        trainSaver.setFile(new File(outTrainSplitPath));
         trainSaver.writeBatch();
 
-        // Guardar dev.arff
+        // Guardar dev_split.arff
         ArffSaver devSaver = new ArffSaver();
         devSaver.setInstances(devData);
-        devSaver.setFile(new File(devPath));
+        devSaver.setFile(new File(outDevSplitPath));
         devSaver.writeBatch();
 
         System.out.println("División completada: Train → " + trainData.numInstances() + " instancias, Dev → " + devData.numInstances());
