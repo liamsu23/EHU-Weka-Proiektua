@@ -3,7 +3,7 @@ import weka.classifiers.functions.SMO;
 import weka.classifiers.functions.supportVector.RBFKernel;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
-import weka.core.converters.ConverterUtils;
+import weka.core.converters.ConverterUtils.DataSource;
 
 public class parametroEkorketaSVM {
     public static void main(String[] args) throws Exception {
@@ -18,10 +18,10 @@ public class parametroEkorketaSVM {
             String outModelPath = args[2]; // Archivo donde se guardará el modelo
 
             // Cargar datasets
-            ConverterUtils.DataSource source = new ConverterUtils.DataSource(inTrainFSSPath);
+            DataSource source = new DataSource(inTrainFSSPath);
             Instances dataTrain = source.getDataSet();
 
-            ConverterUtils.DataSource sourceDev = new ConverterUtils.DataSource(inDevFSSPath);
+            DataSource sourceDev = new DataSource(inDevFSSPath);
             Instances dataDev = sourceDev.getDataSet();
 
             // Establecer la clase objetivo (última columna)
@@ -89,10 +89,10 @@ public class parametroEkorketaSVM {
             // Guardar el mejor modelo encontrado
             if (bestModel != null) {
                 SerializationHelper.write(outModelPath, bestModel);
-                System.out.println("✅ Modelo guardado en: " + outModelPath);
+                System.out.println("Modelo guardado en: " + outModelPath);
             }
 
-            System.out.println("Mejores parámetros: C=" + bestC + ", Gamma=" + bestGamma);
+            System.out.println("Mejores parámetros: C = " + bestC + ", Gamma = " + bestGamma);
             System.out.println("Mejor F-measure: " + bestFMeasure);
         }
         catch (Exception e) {
