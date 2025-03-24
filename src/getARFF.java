@@ -117,89 +117,62 @@ public class getARFF {
     // Cargar la agrupación de causas de muerte
     private static Map<String, String> loadLabelMapping() {
         Map<String, String> labelMapping = new HashMap<>();
+        labelMapping.put("Diarrhea/Dysentery", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Other Infectious Diseases", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("AIDS", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Sepsis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Meningitis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Meningitis/Sepsis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Malaria", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Encephalitis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Measles", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Hemorrhagic Fever", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("TB", "Certain_infectious_and_Parasitic_Diseases");
 
-        // Enfermedades infecciosas (CIE-10: A00-B99)
-        labelMapping.put("diarrhea/dysentery", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("other infectious diseases", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("aids", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("sepsis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("meningitis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("meningitis/sepsis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("malaria", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("encephalitis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("measles", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("hemorrhagic fever", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("tb", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("hepatitis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("tetanus", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Leukemia/Lymphomas", "Neoplasms");
+        labelMapping.put("Colorectal Cancer", "Neoplasms");
+        labelMapping.put("Lung Cancer", "Neoplasms");
+        labelMapping.put("Cervical Cancer", "Neoplasms");
+        labelMapping.put("Breast Cancer", "Neoplasms");
+        labelMapping.put("Stomach Cancer", "Neoplasms");
+        labelMapping.put("Prostate Cancer", "Neoplasms");
+        labelMapping.put("Esophageal Cancer", "Neoplasms");
+        labelMapping.put("Other Cancers", "Neoplasms");
 
-        // Tumores (CIE-10: C00-D49)
-        labelMapping.put("leukemia/lymphomas", "Neoplasms");
-        labelMapping.put("colorectal cancer", "Neoplasms");
-        labelMapping.put("lung cancer", "Neoplasms");
-        labelMapping.put("cervical cancer", "Neoplasms");
-        labelMapping.put("breast cancer", "Neoplasms");
-        labelMapping.put("stomach cancer", "Neoplasms");
-        labelMapping.put("prostate cancer", "Neoplasms");
-        labelMapping.put("esophageal cancer", "Neoplasms");
-        labelMapping.put("liver cancer", "Neoplasms");
-        labelMapping.put("pancreatic cancer", "Neoplasms");
-        labelMapping.put("other cancers", "Neoplasms");
+        labelMapping.put("Diabetes", "Endocrine_Nutritional_and_Metabolic_Diseases");
 
-        // Enfermedades endocrinas (CIE-10: E00-E90)
-        labelMapping.put("diabetes", "Endocrine_Nutritional_and_Metabolic_Diseases");
-        labelMapping.put("malnutrition", "Endocrine_Nutritional_and_Metabolic_Diseases");
-        labelMapping.put("obesity", "Endocrine_Nutritional_and_Metabolic_Diseases");
+        labelMapping.put("Epilepsy", "Diseases_of_the_Nervous_System");
 
-        // Enfermedades neurológicas (CIE-10: G00-G99)
-        labelMapping.put("epilepsy", "Diseases_of_the_Nervous_System");
-        labelMapping.put("alzheimer", "Diseases_of_the_Nervous_System");
-        labelMapping.put("parkinson", "Diseases_of_the_Nervous_System");
+        labelMapping.put("Stroke", "Diseases_of_the_circulatory_system");
+        labelMapping.put("Acute Myocardial Infarction", "Diseases_of_the_circulatory_system");
 
-        // Enfermedades cardiovasculares (CIE-10: I00-I99)
-        labelMapping.put("stroke", "Diseases_of_the_circulatory_system");
-        labelMapping.put("acute myocardial infarction", "Diseases_of_the_circulatory_system");
-        labelMapping.put("heart failure", "Diseases_of_the_circulatory_system");
-        labelMapping.put("hypertension", "Diseases_of_the_circulatory_system");
-        labelMapping.put("cardiac arrest", "Diseases_of_the_circulatory_system");
+        labelMapping.put("Pneumonia", "Diseases_of_Respiratory_System");
+        labelMapping.put("Asthma", "Diseases_of_Respiratory_System");
+        labelMapping.put("COPD", "Diseases_of_Respiratory_System");
 
-        // Enfermedades respiratorias (CIE-10: J00-J99)
-        labelMapping.put("pneumonia", "Diseases_of_Respiratory_System");
-        labelMapping.put("asthma", "Diseases_of_Respiratory_System");
-        labelMapping.put("copd", "Diseases_of_Respiratory_System");
-        labelMapping.put("tuberculosis respiratory", "Diseases_of_Respiratory_System");
+        labelMapping.put("Cirrhosis", "Diseases_of_the_Digestive_System");
+        labelMapping.put("Other Digestive Diseases", "Diseases_of_the_Digestive_System");
 
-        // Enfermedades digestivas (CIE-10: K00-K95)
-        labelMapping.put("cirrhosis", "Diseases_of_the_Digestive_System");
-        labelMapping.put("other digestive diseases", "Diseases_of_the_Digestive_System");
-        labelMapping.put("gastritis", "Diseases_of_the_Digestive_System");
-        labelMapping.put("peptic ulcer", "Diseases_of_the_Digestive_System");
+        labelMapping.put("Renal Failure", "Diseases_of_the_Genitourinary_System");
 
-        // Enfermedades genitourinarias (CIE-10: N00-N99)
-        labelMapping.put("renal failure", "Diseases_of_the_Genitourinary_System");
-        labelMapping.put("kidney disease", "Diseases_of_the_Genitourinary_System");
+        labelMapping.put("Preterm Delivery", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Stillbirth", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Maternal", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Birth Asphyxia", "Pregnancy_childbirth_and_the_puerperium");
 
-        // Embarazo/parto (CIE-10: O00-O9A)
-        labelMapping.put("preterm delivery", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("stillbirth", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("maternal", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("birth asphyxia", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("postpartum hemorrhage", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Congenital Malformations", "Congenital_Malformations");
 
-        // Malformaciones congénitas (CIE-10: Q00-Q99)
-        labelMapping.put("congenital malformations", "Congenital_Malformations");
+        labelMapping.put("Bite of Venomous Animal", "Injury_Poisoning_and_External_Causes");
+        labelMapping.put("Poisonings", "Injury_Poisoning_and_External_Causes");
 
-        // Causas externas (CIE-10: V01-Y99)
-        labelMapping.put("bite of venomous animal", "Injury_Poisoning_and_External_Causes");
-        labelMapping.put("poisonings", "Injury_Poisoning_and_External_Causes");
-        labelMapping.put("road traffic", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("falls", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("homicide", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("fires", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("drowning", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("suicide", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("violent death", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("other injuries", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Road Traffic", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Falls", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Homicide", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Fires", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Drowning", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Suicide", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Violent Death", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Other Injuries", "External_Causes_of_Morbidity_and_Mortality");
 
         return labelMapping;
     }
