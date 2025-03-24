@@ -2,67 +2,143 @@ import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
-import weka.core.converters.ConverterUtils;
+import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
+import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.attribute.Reorder;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 public class fssInfoGain {
-    public static void main(String[] args) {
-        if (args.length < 2) {
-            System.out.println("Mesedez, atributua ondo sartu.");
+    public static void main(String[] args) throws Exception {
+        // Verificar que se han pasado los argumentos correctamente
+        if (args.length != 6) {
+            System.out.println("Erabilera: java fssInfoGain <train_split_BOW.arff> <dev_split_BOW.arff> <test_BOW.arff> <train_split_BOW_FSS.arff> <dev_split_BOW_FSS.arff> <test_BOW_FSS.arff>");
             return;
         }
 
-        String inputTrainBowPath = args[0];
-        String outputTrainBowFssPath = args[1];
-
         try {
-            // 1️⃣ Cargar conjunto de entrenamiento
-            ConverterUtils.DataSource source = new ConverterUtils.DataSource(inputTrainBowPath);
-            Instances data = source.getDataSet();
+            // Asignar los parámetros de entrada
+            String inTrainBOWPath = args[0];
+            String inDevBOWPath = args[1];
+            String inTestBOWPath = args[2];
+            String outTrainBOWFSSPath = args[3];
+            String outDevBOWFSSPath = args[4];
+            String outTestBOWFSSPath = args[5];
 
-            // Verificar si la clase está definida
-            if (data.classIndex() == -1) {
-                data.setClassIndex(data.attribute("Cause_of_Death").index());
-            }
+            // 1. Procesar el archivo de entrenamiento
+            System.out.println("Procesando train_split_BOW.arff...");
+            Instances trainBOWFSSData = processTrainingData(inTrainBOWPath, outTrainBOWFSSPath);
 
-            System.out.println("📊 Número de atributos antes de la selección: " + data.numAttributes());
+            // 2. Procesar el archivo de desarrollo
+            System.out.println("Procesando dev_split_BOW.arff...");
+            processTestData(inDevBOWPath, outDevBOWFSSPath, trainBOWFSSData);
 
-            // 2️⃣ Aplicar selección de atributos usando InfoGainAttributeEval + Ranker
-            AttributeSelection filter = new AttributeSelection();
-            InfoGainAttributeEval evaluator = new InfoGainAttributeEval(); // Evalúa ganancia de información
-            Ranker search = new Ranker(); // Ordena los atributos de mayor a menor importancia
-            search.setNumToSelect(1000); // Mantiene todos los atributos relevantes (puedes cambiarlo)
+            // 3. Procesar el archivo de prueba
+            System.out.println("Procesando test_BOW.arff...");
+            processTestData(inTestBOWPath, outTestBOWFSSPath, trainBOWFSSData);
 
-            filter.setEvaluator(evaluator);
-            filter.setSearch(search);
-            filter.setInputFormat(data);
-            Instances selectedData = Filter.useFilter(data, filter);
-
-            System.out.println("✅ Número de atributos después de la selección: " + selectedData.numAttributes());
-
-            // 3️⃣ Guardar el nuevo conjunto de datos en train_fss.arff
-            ArffSaver saver = new ArffSaver();
-            saver.setInstances(selectedData);
-            saver.setFile(new File(outputTrainBowFssPath));
-            saver.writeBatch();
-
-            // 4️⃣ Guardar el filtro de selección de atributos para reutilizarlo en dev
-            FileOutputStream fos = new FileOutputStream("fss_filter.model");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(filter);
-            oos.close();
-            fos.close();
-
-            System.out.println("🚀 Filtro de selección de atributos guardado en fss_filter.model");
-
+            System.out.println("Prozesua amaitu da.");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ERROR");
         }
     }
+
+    private static Instances processTrainingData(String inTrainPath, String outTrainPath) throws Exception {
+        // Cargar datos de entrenamiento
+        DataSource source = new DataSource(inTrainPath);
+        Instances data = source.getDataSet();
+
+        // Establecer atributo clase (asumimos que se llama "Cause_of_Death")
+        if (data.classIndex() == -1) {
+            data.setClassIndex(data.attribute("Cause_of_Death").index());
+        }
+
+        System.out.println("📊 Número de atributos antes de la selección: " + data.numAttributes());
+
+        // Configurar y aplicar filtro de selección de atributos
+        AttributeSelection filter = atributuHautapena();
+        filter.setInputFormat(data);
+        Instances selectedData = Filter.useFilter(data, filter);
+
+        System.out.println("✅ Número de atributos después de la selección: " + selectedData.numAttributes());
+
+        // Guardar datos procesados
+        saveArffFile(selectedData, outTrainPath);
+
+        return selectedData;
+    }
+
+    private static void processTestData(String inTestPath, String outTestPath, Instances trainData) throws Exception {
+        // Cargar datos de test/dev
+        DataSource source = new DataSource(inTestPath);
+        Instances testData = source.getDataSet();
+
+        // Asegurar que el atributo clase está establecido (si existe)
+        if (testData.attribute("Cause_of_Death") != null) {
+            testData.setClassIndex(testData.attribute("Cause_of_Death").index());
+        }
+
+        // Ajustar datos de test para que coincidan con el formato de entrenamiento
+        Instances adjustedData = adjustHeaders(testData, trainData);
+
+        // Guardar datos procesados
+        saveArffFile(adjustedData, outTestPath);
+    }
+
+    private static AttributeSelection atributuHautapena() {
+        AttributeSelection filter = new AttributeSelection();
+        InfoGainAttributeEval evaluator = new InfoGainAttributeEval();
+        Ranker search = new Ranker();
+        search.setNumToSelect(1000); // Número de atributos a seleccionar
+
+        filter.setEvaluator(evaluator);
+        filter.setSearch(search);
+
+        return filter;
+    }
+
+    private static Instances adjustHeaders(Instances testData, Instances trainData) throws Exception {
+        // 1. Eliminar atributos que están en test pero no en train
+        ArrayList<Integer> indicesToRemove = new ArrayList<>();
+        for (int i = 0; i < testData.numAttributes(); i++) {
+            if (trainData.attribute(testData.attribute(i).name()) == null) {
+                indicesToRemove.add(i);
+            }
+        }
+
+        if (!indicesToRemove.isEmpty()) {
+            Remove removeFilter = new Remove();
+            removeFilter.setAttributeIndicesArray(indicesToRemove.stream().mapToInt(i -> i).toArray());
+            removeFilter.setInvertSelection(false);
+            removeFilter.setInputFormat(testData);
+            testData = Filter.useFilter(testData, removeFilter);
+        }
+
+        // 2. Reordenar atributos para que coincidan con train
+        StringBuilder order = new StringBuilder();
+        for (int i = 0; i < trainData.numAttributes(); i++) {
+            int idx = testData.attribute(trainData.attribute(i).name()).index() + 1;
+            order.append(idx).append(",");
+        }
+        order.deleteCharAt(order.length() - 1); // Eliminar última coma
+
+        Reorder reorderFilter = new Reorder();
+        reorderFilter.setAttributeIndices(order.toString());
+        reorderFilter.setInputFormat(testData);
+        testData = Filter.useFilter(testData, reorderFilter);
+
+        return testData;
+    }
+
+    private static void saveArffFile(Instances data, String outputPath) throws Exception {
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(data);
+        saver.setFile(new File(outputPath));
+        saver.writeBatch();
+    }
+
 }
