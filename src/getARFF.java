@@ -1,85 +1,125 @@
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
+import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class getARFF {
-
     public static void main(String[] args) throws IOException {
-        // Cargar los datos
-        String csvFilePath = args[0]; // Ruta del archivo CSV
-        String arffFilePath = args[1]; // Ruta del archivo ARFF de salida
+        // Verificar que se han pasado los argumentos correctamente
+        if (args.length != 4) {
+            System.out.println("Erabilera: java getArff2 <train_csv> <test_csv> <train_arff> <test_arff>");
+            return;
+        }
+        String trainCSVPath = args[0]; // Ruta al archivo CSV de entrenamiento
+        String testCSVPath = args[1]; // Ruta al archivo CSV de prueba
+        String trainARFFPath = args[2]; // Ruta al archivo ARFF de salida de entrenamiento
+        String testARFFPath = args[3]; // Ruta al archivo ARFF de salida de prueba
+
         // Cargar el mapeo de etiquetas
-        Map<String, String> labelMapping = loadLabelMapping(); // Nombre de la relación ARFF
+        Map<String, String> labelMapping = loadLabelMapping();
 
         try {
-            // Leer el archivo CSV
-            CSVReader reader = new CSVReader(new FileReader(csvFilePath));
-            List<String[]> csvData = reader.readAll();
+            // Convertir train.csv a ARFF (con clase conocida)
+            convertCSVtoARFF(trainCSVPath, trainARFFPath, labelMapping, false);
 
-            // Crear el archivo ARFF
-            FileWriter arffWriter = new FileWriter(arffFilePath);
+            // Convertir test.csv a ARFF (con clase desconocida "?")
+            convertCSVtoARFF(testCSVPath, testARFFPath, labelMapping, true);
 
-            // Conjuntos para valores únicos de Place y Cause_of_Death
-            Set<String> places = new HashSet<>();
-            Set<String> generalCategories = new HashSet<>();
+            System.out.println("Archivos ARFF generados exitosamente.");
+        } catch (IOException | CsvException e) {
+            e.printStackTrace();
+            System.out.println("ERROR");
+        }
+    }
 
-            // Extrae valores únicos de Place y Cause_of_Death
-            for (int i = 1; i < csvData.size(); i++) {
-                places.add(csvData.get(i)[4]); // Columna Place
+    // Método para convertir CSV a ARFF
+    private static void convertCSVtoARFF(String csvFilePath, String arffFilePath, Map<String, String> labelMapping, boolean isTestData) throws IOException, CsvException {
+        // Leer el archivo CSV
+        CSVReader reader = new CSVReader(new FileReader(csvFilePath));
+        List<String[]> csvData = reader.readAll();
+
+        // Conjuntos para valores únicos de Place y Cause_of_Death
+        Set<String> places = new HashSet<>();
+        Set<String> generalCategories = new HashSet<>();
+
+        // Extraer valores únicos de Place y Cause_of_Death
+        for (int i = 1; i < csvData.size(); i++) {
+            places.add(csvData.get(i)[4]); // Columna Place
+            if (!isTestData) { // Solo mapear causas de muerte si no es un conjunto de prueba
                 String specificLabel = csvData.get(i)[6].trim().toLowerCase(); // Columna Cause_of_Death
-                String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel); // Usar el específico si no está en el mapeo
-
-                // Formatear la causa de muerte eliminando espacios y caracteres conflictivos
-                generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9]", "_");
-                generalCategories.add(generalLabel); // Añadirlo al conjunto
+                String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel); // Mapeo
+                generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9]", "_"); // Limpiar la etiqueta
+                generalCategories.add(generalLabel); // Añadir al conjunto
             }
+        }
 
-            // Escribir el encabezado ARFF
-            writeHeaderARFF(arffWriter, places, generalCategories);
+        // Si es un conjunto de prueba, la clase es desconocida ("?")
+        if (isTestData) {
+            generalCategories.add("?"); // Añadir "?" como clase desconocida
+        }
 
-            // Escribe los datos en el ARFF
-            for (int i = 1; i < csvData.size(); i++) {
-                String[] row = csvData.get(i);
-                String specificLabel = row[6].trim().toLowerCase(); // Columna Cause_of_Death
+        // Crear el archivo ARFF
+        FileWriter arffWriter = new FileWriter(arffFilePath);
 
+        // Escribir la cabecera en el archivo ARFF
+        writeHeaderARFF(arffWriter, places, generalCategories);
+
+        // Escribir los datos en el ARFF
+        for (int i = 1; i < csvData.size(); i++) {
+            String[] row = csvData.get(i);
+            String specificLabel = row[6].trim().toLowerCase(); // Columna Cause_of_Death
+
+            // Si es un conjunto de prueba, la clase es desconocida ("?")
+            if (isTestData) {
+                row[6] = "?";
+            } else {
                 // Si la clase es "NA" o "na", la convertimos en "?"
                 if (specificLabel.equalsIgnoreCase("na")) {
                     row[6] = "?";
                 } else {
-                    // Aplicamos el mapeo si existe, si no, usamos el mismo valor
+                    // Aplicar el mapeo si existe, si no, usar el mismo valor
                     String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel);
-
-                    // Reemplazar solo caracteres especiales en la clase, pero MANTENER "?"
-                    generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9?]", "_");
-
+                    generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9?]", "_"); // Limpiar la etiqueta
                     row[6] = generalLabel; // Actualizar la causa de muerte
                 }
-
-                row[5] = "\"" + cleanNarrative(row[5]) + "\""; // Limpiar la narrativa
-
-                // Escribe la fila en el ARFF
-                arffWriter.write(String.join(",", row) + "\n");
             }
 
+            row[5] = "\"" + cleanNarrative(row[5]) + "\""; // Limpiar la narrativa
 
-            // Crear los archivos
-            arffWriter.close();
-            reader.close();
-
-            System.out.println("Archivo ARFF generado exitosamente en: " + arffFilePath);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        catch (CsvException e) {
-            throw new RuntimeException(e);
+            // Escribir la fila en el ARFF
+            arffWriter.write(String.join(",", row) + "\n");
         }
 
+        // Cerrar los archivos
+        arffWriter.close();
+        reader.close();
+    }
+
+    // Método para guardar Instances en un archivo ARFF
+    private static void saveInstancesToARFF(Instances instances, String fileName) throws IOException {
+        // train edo test multzoarekin lan egingo dugun jakin
+        String[] split = fileName.split("\\\\");
+        String multzoa = split[split.length - 1];
+        System.out.println(multzoa);
+
+        // test multzoa bada, klasearen balioa missing jarri
+        if (multzoa.equals("test_RAW.arff")) {
+            for (int i = 0; i < instances.numInstances(); i++) {
+                instances.instance(i).setClassMissing();
+            }
+        }
+
+        // .arff artxiboan gorde
+        ArffSaver arffSaver = new ArffSaver();
+        arffSaver.setInstances(instances);
+        arffSaver.setFile(new File(fileName));
+        arffSaver.writeBatch();
     }
 
     // Cargar la agrupación de causas de muerte
@@ -166,8 +206,7 @@ public class getARFF {
             fw.write("@ATTRIBUTE Open_Response STRING\n");
             fw.write("@ATTRIBUTE Cause_of_Death {" + String.join(",", generalCategories) + "}\n\n");
             fw.write("@DATA\n");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
