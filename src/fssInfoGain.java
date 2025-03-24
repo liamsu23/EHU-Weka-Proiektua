@@ -40,7 +40,7 @@ public class fssInfoGain {
             System.out.println("Procesando test_BOW.arff...");
             processTestData(inTestBOWPath, outTestBOWFSSPath, trainBOWFSSData);
 
-            System.out.println("Prozesua amaitu da.");
+            System.out.println("Proceso terminado.");
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ERROR");
@@ -57,14 +57,14 @@ public class fssInfoGain {
             data.setClassIndex(data.attribute("Cause_of_Death").index());
         }
 
-        System.out.println("📊 Número de atributos antes de la selección: " + data.numAttributes());
+        System.out.println("Número de atributos antes de la selección: " + data.numAttributes());
 
         // Configurar y aplicar filtro de selección de atributos
         AttributeSelection filter = atributuHautapena();
         filter.setInputFormat(data);
         Instances selectedData = Filter.useFilter(data, filter);
 
-        System.out.println("✅ Número de atributos después de la selección: " + selectedData.numAttributes());
+        System.out.println("Número de atributos después de la selección: " + selectedData.numAttributes());
 
         // Guardar datos procesados
         saveArffFile(selectedData, outTrainPath);
