@@ -7,6 +7,8 @@ import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
 public class fssInfoGain {
     public static void main(String[] args) {
@@ -24,8 +26,7 @@ public class fssInfoGain {
             Instances data = source.getDataSet();
 
             // Verificar si la clase está definida
-            if (data.classIndex() == -1){
-                //data.setClassIndex(data.numAttributes() - 1); // Última columna como clase
+            if (data.classIndex() == -1) {
                 data.setClassIndex(data.attribute("Cause_of_Death").index());
             }
 
@@ -49,6 +50,15 @@ public class fssInfoGain {
             saver.setInstances(selectedData);
             saver.setFile(new File(outputTrainBowFssPath));
             saver.writeBatch();
+
+            // 4️⃣ Guardar el filtro de selección de atributos para reutilizarlo en dev
+            FileOutputStream fos = new FileOutputStream("fss_filter.model");
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(filter);
+            oos.close();
+            fos.close();
+
+            System.out.println("🚀 Filtro de selección de atributos guardado en fss_filter.model");
 
         } catch (Exception e) {
             e.printStackTrace();
