@@ -26,11 +26,22 @@ public class getSplit {
         filter.setFold(1); // Tomamos el primer fold como dev
         filter.setInvertSelection(false); // Filtramos para obtener solo dev
         filter.setInputFormat(data);
+
+        // Aplicar filtro para obtener el conjunto de validación
         Instances devData = weka.filters.Filter.useFilter(data, filter);
 
-        filter.setInvertSelection(true); // Ahora seleccionamos el 80% restante como train
+        // Ahora invertimos la selección para obtener el conjunto de entrenamiento
+        filter = new StratifiedRemoveFolds(); // REINICIAMOS el filtro para evitar errores
+        filter.setNumFolds(5);
+        filter.setFold(1);
+        filter.setInvertSelection(true); // Tomamos el 80% restante como train
+        filter.setInputFormat(data);
         Instances trainData = weka.filters.Filter.useFilter(data, filter);
 
+        // Imprimir información para verificar la división
+        System.out.println("Total instancias: " + data.numInstances());
+        System.out.println("Train instancias: " + trainData.numInstances());
+        System.out.println("Dev instancias: " + devData.numInstances());
 
         // Guardar train_split.arff
         ArffSaver trainSaver = new ArffSaver();
@@ -44,6 +55,6 @@ public class getSplit {
         devSaver.setFile(new File(outDevSplitPath));
         devSaver.writeBatch();
 
-        System.out.println("División completada: Train → " + trainData.numInstances() + " instancias, Dev → " + devData.numInstances());
+        System.out.println("División completada.");
     }
 }
