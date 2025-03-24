@@ -1,60 +1,61 @@
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.converters.ArffSaver;
-import weka.filters.supervised.instance.StratifiedRemoveFolds;
+import weka.filters.Filter;
+import weka.filters.unsupervised.instance.Randomize;
+import weka.filters.unsupervised.instance.RemovePercentage;
+
 import java.io.File;
 
 public class getSplit {
     public static void main(String[] args) throws Exception {
-        // Archivo de entrada y salida
-        String inTrainPath = args[0];  // Dataset original
-        String outTrainSplitPath = args[1]; // Archivo de entrenamiento
-        String outDevSplitPath = args[2]; // Archivo de validación
-
-        // Cargar dataset
-        DataSource source = new DataSource(inTrainPath);
-        Instances data = source.getDataSet();
-
-        // Establecer el índice de la clase (último atributo)
-        if (data.classIndex() == -1) {
-            data.setClassIndex(data.numAttributes() - 1);
+        // Validación de argumentos
+        if (args.length != 3) {
+            System.out.println("Uso: java getSplit <train_RAW.arff> <train_split_RAW.arff> <dev_split_RAW.arff>");
+            return;
         }
 
-        // Crear filtro para dividir de forma estratificada (80% train - 20% dev)
-        StratifiedRemoveFolds filter = new StratifiedRemoveFolds();
-        filter.setNumFolds(5); // 5-fold, 1 fold será dev (20%)
-        filter.setFold(1); // Tomamos el primer fold como dev
-        filter.setInvertSelection(false); // Filtramos para obtener solo dev
-        filter.setInputFormat(data);
+        String inTrainPath = args[0];
+        String outTrainSplitPath = args[1];
+        String outDevSplitPath = args[2];
 
-        // Aplicar filtro para obtener el conjunto de validación
-        Instances devData = weka.filters.Filter.useFilter(data, filter);
+        // 1. Cargar datos
+        DataSource source = new DataSource(inTrainPath);
+        Instances data = source.getDataSet();
+        data.setClassIndex(data.numAttributes() - 1);
 
-        // Ahora invertimos la selección para obtener el conjunto de entrenamiento
-        filter = new StratifiedRemoveFolds(); // REINICIAMOS el filtro para evitar errores
-        filter.setNumFolds(5);
-        filter.setFold(1);
-        filter.setInvertSelection(true); // Tomamos el 80% restante como train
-        filter.setInputFormat(data);
-        Instances trainData = weka.filters.Filter.useFilter(data, filter);
+        Randomize randomFilter = new Randomize();
+        randomFilter.setRandomSeed(1);
+        randomFilter.setInputFormat(data);
+        Instances randomData = Filter.useFilter(data, randomFilter);
 
-        // Imprimir información para verificar la división
+        // 2. Primero obtener TRAIN (80%)
+        RemovePercentage removeFilter = new RemovePercentage();
+        removeFilter.setInputFormat(data);
+        removeFilter.setPercentage(80); // Eliminar 20%
+        removeFilter.setInvertSelection(true); // Conservar 80%
+        Instances trainData = Filter.useFilter(randomData, removeFilter);
+
+        // 3. Luego obtener DEV (20%) del original
+        removeFilter = new RemovePercentage(); // Reiniciar filtro
+        removeFilter.setInputFormat(data);
+        removeFilter.setPercentage(80); // Eliminar 80%
+        removeFilter.setInvertSelection(false); // Conservar 20%
+        Instances devData = Filter.useFilter(randomData, removeFilter);
+
+        // 4. Verificación
         System.out.println("Total instancias: " + data.numInstances());
-        System.out.println("Train instancias: " + trainData.numInstances());
-        System.out.println("Dev instancias: " + devData.numInstances());
+        System.out.println("Train (80%): " + trainData.numInstances());
+        System.out.println("Dev (20%): " + devData.numInstances());
 
-        // Guardar train_split.arff
-        ArffSaver trainSaver = new ArffSaver();
-        trainSaver.setInstances(trainData);
-        trainSaver.setFile(new File(outTrainSplitPath));
-        trainSaver.writeBatch();
+        // 5. Guardar
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(trainData);
+        saver.setFile(new File(outTrainSplitPath));
+        saver.writeBatch();
 
-        // Guardar dev_split.arff
-        ArffSaver devSaver = new ArffSaver();
-        devSaver.setInstances(devData);
-        devSaver.setFile(new File(outDevSplitPath));
-        devSaver.writeBatch();
-
-        System.out.println("División completada.");
+        saver.setInstances(devData);
+        saver.setFile(new File(outDevSplitPath));
+        saver.writeBatch();
     }
 }
