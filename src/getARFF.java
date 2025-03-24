@@ -8,185 +8,172 @@ import java.util.*;
 
 public class getARFF {
     public static void main(String[] args) throws IOException {
-        // Verificar argumentos
+        // Verificar que se han pasado los argumentos correctamente
         if (args.length != 4) {
-            System.out.println("Uso: java getArff2 <train_csv> <test_csv> <train_arff> <test_arff>");
+            System.out.println("Erabilera: java getArff <train_csv> <test_csv> <train_RAW.arff> <test_RAW.arff>");
             return;
         }
+        String inTrainCSVPath = args[0]; // Ruta al archivo CSV de entrenamiento
+        String inTestCSVPath = args[1]; // Ruta al archivo CSV de prueba
+        String outTrainARFFPath = args[2]; // Ruta al archivo ARFF de salida de entrenamiento
+        String outTestARFFPath = args[3]; // Ruta al archivo ARFF de salida de prueba
 
-        String trainCSVPath = args[0];
-        String testCSVPath = args[1];
-        String trainARFFPath = args[2];
-        String testARFFPath = args[3];
-
-        // Cargar el mapeo de etiquetas normalizado
         Map<String, String> labelMapping = loadLabelMapping();
 
         try {
-            // Convertir archivos
-            convertCSVtoARFF(trainCSVPath, trainARFFPath, labelMapping, false);
-            convertCSVtoARFF(testCSVPath, testARFFPath, labelMapping, true);
+            // 1. Procesar train para obtener categorías y lugares usados
+            Set<String> trainCategories = new HashSet<>();
+            Set<String> places = new HashSet<>();
+            processCSV(inTrainCSVPath, labelMapping, false, trainCategories, places);
 
-            System.out.println("Archivos ARFF generados correctamente.");
-        } catch (IOException | CsvException e) {
+            // 2. Asegurar que todas las categorías del mapeo estén incluidas
+            trainCategories.addAll(labelMapping.values());
+
+            // 3. Convertir archivos usando las mismas categorías
+            convertARFF(inTrainCSVPath, outTrainARFFPath, labelMapping, false, places, trainCategories);
+            convertARFF(inTestCSVPath, outTestARFFPath, labelMapping, true, places, trainCategories);
+
+            System.out.println("Archivos ARFF generados exitosamente.");
+        }
+        catch (Exception e) {
             e.printStackTrace();
-            System.out.println("ERROR: " + e.getMessage());
+            System.out.println("ERROR");
         }
     }
 
-    private static void convertCSVtoARFF(String csvFilePath, String arffFilePath,
-                                         Map<String, String> labelMapping, boolean isTestData)
-            throws IOException, CsvException {
+    private static void processCSV(String csvFile, Map<String, String> labelMapping, boolean isTest, Set<String> categories, Set<String> places) throws IOException, CsvException {
+        CSVReader reader = new CSVReader(new FileReader(csvFile));
+        List<String[]> data = reader.readAll();
 
-        CSVReader reader = new CSVReader(new FileReader(csvFilePath));
-        List<String[]> csvData = reader.readAll();
+        for (int i = 1; i < data.size(); i++) {
+            String[] row = data.get(i);
+            places.add(row[4]); // Site
 
-        Set<String> places = new HashSet<>();
-        Set<String> generalCategories = new HashSet<>();
-
-        // Procesar datos para obtener valores únicos
-        for (int i = 1; i < csvData.size(); i++) {
-            places.add(csvData.get(i)[4]); // Columna Place
-
-            // Para categorías generales (solo en train o usando mapeo existente)
-            String specificLabel = csvData.get(i)[6].trim().toLowerCase();
-            String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel);
-            generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9]", "_");
-            generalCategories.add(generalLabel);
-        }
-
-        // Escribir archivo ARFF
-        FileWriter arffWriter = new FileWriter(arffFilePath);
-        writeHeaderARFF(arffWriter, places, generalCategories);
-
-        // Procesar y escribir cada fila
-        for (int i = 1; i < csvData.size(); i++) {
-            String[] row = csvData.get(i).clone(); // Copiar para no modificar el original
-
-            // Procesar Cause_of_Death (columna 6)
-            String specificLabel = row[6].trim().toLowerCase();
-            String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel);
-            generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9?]", "_");
-
-            // Asignar valor final
-            if (isTestData) {
-                row[6] = "?";
-            } else {
-                row[6] = specificLabel.equalsIgnoreCase("na") ? "?" : generalLabel;
+            if (!isTest && !row[6].equalsIgnoreCase("na")) {
+                String mappedLabel = labelMapping.getOrDefault(row[6].trim().toLowerCase(), row[6])
+                        .replaceAll("[^a-zA-Z0-9]", "_");
+                categories.add(mappedLabel);
             }
-
-            // Limpiar narrative (columna 5)
-            row[5] = "\"" + cleanNarrative(row[5]) + "\"";
-
-            arffWriter.write(String.join(",", row) + "\n");
         }
-
-        arffWriter.close();
         reader.close();
     }
 
+    private static void convertARFF(String csvFile, String arffFile, Map<String, String> labelMapping, boolean isTest, Set<String> places, Set<String> categories) throws IOException, CsvException {
+        CSVReader reader = new CSVReader(new FileReader(csvFile));
+        FileWriter writer = new FileWriter(arffFile);
+
+        // Escribir cabecera usando tu método
+        writeHeaderARFF(writer, places, categories);
+
+        // Procesar y escribir datos
+        List<String[]> data = reader.readAll();
+        for (int i = 1; i < data.size(); i++) {
+            String[] row = data.get(i);
+
+            // Procesar Cause_of_Death
+            if (isTest || row[6].equalsIgnoreCase("na")) {
+                row[6] = "?";
+            } else {
+                row[6] = labelMapping.getOrDefault(row[6].trim().toLowerCase(), row[6])
+                        .replaceAll("[^a-zA-Z0-9]", "_");
+            }
+
+            // Limpiar narrative
+            row[5] = "\"" + cleanNarrative(row[5]) + "\"";
+
+            writer.write(String.join(",", row) + "\n");
+        }
+
+        reader.close();
+        writer.close();
+    }
+
+    // Escribir la cabecera
+    private static void writeHeaderARFF(FileWriter fw, Set<String> places, Set<String> generalCategories) throws IOException {
+        try {
+            fw.write("@RELATION muertes_causas\n\n");
+            fw.write("@ATTRIBUTE ID NUMERIC\n");
+            fw.write("@ATTRIBUTE Module {Adult, Child, Neonate}\n");
+            fw.write("@ATTRIBUTE Age NUMERIC\n");
+            fw.write("@ATTRIBUTE Sex {1, 2}\n");
+            fw.write("@ATTRIBUTE Site {" + String.join(",", places) + "}\n");
+            fw.write("@ATTRIBUTE Open_Response STRING\n");
+            fw.write("@ATTRIBUTE Cause_of_Death {" + String.join(",", generalCategories) + "}\n\n");
+            fw.write("@DATA\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Limpiar el texto de Narrative
+    private static String cleanNarrative(String text) {
+        return text.replace("#", "").replace("?", "").replace("!", "").replace(",", "")
+                .replace("\"", "").replace("'", "").replace(";", "").replace(":", "")
+                .replace("(", "").replace(")", "").replace("[", "").replace("]", "")
+                .replace("{", "").replace("}", "").replace("/", " ").replace("\\", " ")
+                .trim();
+    }
+
+    // Cargar la agrupación de causas de muerte
     private static Map<String, String> loadLabelMapping() {
         Map<String, String> labelMapping = new HashMap<>();
+        labelMapping.put("Diarrhea/Dysentery", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Other Infectious Diseases", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("AIDS", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Sepsis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Meningitis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Meningitis/Sepsis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Malaria", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Encephalitis", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Measles", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Hemorrhagic Fever", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("TB", "Certain_infectious_and_Parasitic_Diseases");
 
-        // Enfermedades infecciosas (CIE-10: A00-B99)
-        labelMapping.put("diarrhea/dysentery", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("other infectious diseases", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("aids", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("sepsis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("meningitis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("meningitis/sepsis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("malaria", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("encephalitis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("measles", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("hemorrhagic fever", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("tb", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("hepatitis", "Certain_infectious_and_Parasitic_Diseases");
-        labelMapping.put("tetanus", "Certain_infectious_and_Parasitic_Diseases");
+        labelMapping.put("Leukemia/Lymphomas", "Neoplasms");
+        labelMapping.put("Colorectal Cancer", "Neoplasms");
+        labelMapping.put("Lung Cancer", "Neoplasms");
+        labelMapping.put("Cervical Cancer", "Neoplasms");
+        labelMapping.put("Breast Cancer", "Neoplasms");
+        labelMapping.put("Stomach Cancer", "Neoplasms");
+        labelMapping.put("Prostate Cancer", "Neoplasms");
+        labelMapping.put("Esophageal Cancer", "Neoplasms");
+        labelMapping.put("Other Cancers", "Neoplasms");
 
-        // Tumores (CIE-10: C00-D49)
-        labelMapping.put("leukemia/lymphomas", "Neoplasms");
-        labelMapping.put("colorectal cancer", "Neoplasms");
-        labelMapping.put("lung cancer", "Neoplasms");
-        labelMapping.put("cervical cancer", "Neoplasms");
-        labelMapping.put("breast cancer", "Neoplasms");
-        labelMapping.put("stomach cancer", "Neoplasms");
-        labelMapping.put("prostate cancer", "Neoplasms");
-        labelMapping.put("esophageal cancer", "Neoplasms");
-        labelMapping.put("liver cancer", "Neoplasms");
-        labelMapping.put("pancreatic cancer", "Neoplasms");
-        labelMapping.put("other cancers", "Neoplasms");
+        labelMapping.put("Diabetes", "Endocrine_Nutritional_and_Metabolic_Diseases");
 
-        // Enfermedades endocrinas (CIE-10: E00-E90)
-        labelMapping.put("diabetes", "Endocrine_Nutritional_and_Metabolic_Diseases");
-        labelMapping.put("malnutrition", "Endocrine_Nutritional_and_Metabolic_Diseases");
-        labelMapping.put("obesity", "Endocrine_Nutritional_and_Metabolic_Diseases");
+        labelMapping.put("Epilepsy", "Diseases_of_the_Nervous_System");
 
-        // Enfermedades neurológicas (CIE-10: G00-G99)
-        labelMapping.put("epilepsy", "Diseases_of_the_Nervous_System");
-        labelMapping.put("alzheimer", "Diseases_of_the_Nervous_System");
-        labelMapping.put("parkinson", "Diseases_of_the_Nervous_System");
+        labelMapping.put("Stroke", "Diseases_of_the_circulatory_system");
+        labelMapping.put("Acute Myocardial Infarction", "Diseases_of_the_circulatory_system");
 
-        // Enfermedades cardiovasculares (CIE-10: I00-I99)
-        labelMapping.put("stroke", "Diseases_of_the_circulatory_system");
-        labelMapping.put("acute myocardial infarction", "Diseases_of_the_circulatory_system");
-        labelMapping.put("heart failure", "Diseases_of_the_circulatory_system");
-        labelMapping.put("hypertension", "Diseases_of_the_circulatory_system");
-        labelMapping.put("cardiac arrest", "Diseases_of_the_circulatory_system");
+        labelMapping.put("Pneumonia", "Diseases_of_Respiratory_System");
+        labelMapping.put("Asthma", "Diseases_of_Respiratory_System");
+        labelMapping.put("COPD", "Diseases_of_Respiratory_System");
 
-        // Enfermedades respiratorias (CIE-10: J00-J99)
-        labelMapping.put("pneumonia", "Diseases_of_Respiratory_System");
-        labelMapping.put("asthma", "Diseases_of_Respiratory_System");
-        labelMapping.put("copd", "Diseases_of_Respiratory_System");
-        labelMapping.put("tuberculosis respiratory", "Diseases_of_Respiratory_System");
+        labelMapping.put("Cirrhosis", "Diseases_of_the_Digestive_System");
+        labelMapping.put("Other Digestive Diseases", "Diseases_of_the_Digestive_System");
 
-        // Enfermedades digestivas (CIE-10: K00-K95)
-        labelMapping.put("cirrhosis", "Diseases_of_the_Digestive_System");
-        labelMapping.put("other digestive diseases", "Diseases_of_the_Digestive_System");
-        labelMapping.put("gastritis", "Diseases_of_the_Digestive_System");
-        labelMapping.put("peptic ulcer", "Diseases_of_the_Digestive_System");
+        labelMapping.put("Renal Failure", "Diseases_of_the_Genitourinary_System");
 
-        // Enfermedades genitourinarias (CIE-10: N00-N99)
-        labelMapping.put("renal failure", "Diseases_of_the_Genitourinary_System");
-        labelMapping.put("kidney disease", "Diseases_of_the_Genitourinary_System");
+        labelMapping.put("Preterm Delivery", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Stillbirth", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Maternal", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Birth Asphyxia", "Pregnancy_childbirth_and_the_puerperium");
 
-        // Embarazo/parto (CIE-10: O00-O9A)
-        labelMapping.put("preterm delivery", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("stillbirth", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("maternal", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("birth asphyxia", "Pregnancy_childbirth_and_the_puerperium");
-        labelMapping.put("postpartum hemorrhage", "Pregnancy_childbirth_and_the_puerperium");
+        labelMapping.put("Congenital Malformations", "Congenital_Malformations");
 
-        // Malformaciones congénitas (CIE-10: Q00-Q99)
-        labelMapping.put("congenital malformations", "Congenital_Malformations");
+        labelMapping.put("Bite of Venomous Animal", "Injury_Poisoning_and_External_Causes");
+        labelMapping.put("Poisonings", "Injury_Poisoning_and_External_Causes");
 
-        // Causas externas (CIE-10: V01-Y99)
-        labelMapping.put("bite of venomous animal", "Injury_Poisoning_and_External_Causes");
-        labelMapping.put("poisonings", "Injury_Poisoning_and_External_Causes");
-        labelMapping.put("road traffic", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("falls", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("homicide", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("fires", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("drowning", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("suicide", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("violent death", "External_Causes_of_Morbidity_and_Mortality");
-        labelMapping.put("other injuries", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Road Traffic", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Falls", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Homicide", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Fires", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Drowning", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Suicide", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Violent Death", "External_Causes_of_Morbidity_and_Mortality");
+        labelMapping.put("Other Injuries", "External_Causes_of_Morbidity_and_Mortality");
 
         return labelMapping;
-    }
-    private static String cleanNarrative(String text) {
-        return text.replaceAll("[#?!,\"'.;:()\\[\\]{}/\\\\]", " ").trim();
-    }
-
-    private static void writeHeaderARFF(FileWriter fw, Set<String> places,
-                                        Set<String> generalCategories) throws IOException {
-        fw.write("@RELATION muertes_causas\n\n");
-        fw.write("@ATTRIBUTE ID NUMERIC\n");
-        fw.write("@ATTRIBUTE Module {Adult, Child, Neonate}\n");
-        fw.write("@ATTRIBUTE Age NUMERIC\n");
-        fw.write("@ATTRIBUTE Sex {1, 2}\n");
-        fw.write("@ATTRIBUTE Site {" + String.join(",", places) + "}\n");
-        fw.write("@ATTRIBUTE Open_Response STRING\n");
-        fw.write("@ATTRIBUTE Cause_of_Death {" + String.join(",", generalCategories) + "}\n\n");
-        fw.write("@DATA\n");
     }
 }
