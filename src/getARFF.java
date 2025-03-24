@@ -59,15 +59,15 @@ public class getARFF {
             }
         }
 
-        // Si es un conjunto de prueba, la clase es desconocida ("?")
+        // **CORRECCIÓN**: Si es test, usa las categorías del train
         if (isTestData) {
-            generalCategories.add("?"); // Añadir "?" como clase desconocida
+            generalCategories = new HashSet<>(labelMapping.values()); // Mantener las categorías del train
         }
 
         // Crear el archivo ARFF
         FileWriter arffWriter = new FileWriter(arffFilePath);
 
-        // Escribir la cabecera en el archivo ARFF
+        // **CORRECCIÓN**: No incluir "?" en la cabecera del test
         writeHeaderARFF(arffWriter, places, generalCategories);
 
         // Escribir los datos en el ARFF
@@ -75,18 +75,16 @@ public class getARFF {
             String[] row = csvData.get(i);
             String specificLabel = row[6].trim().toLowerCase(); // Columna Cause_of_Death
 
-            // Si es un conjunto de prueba, la clase es desconocida ("?")
+            // **CORRECCIÓN**: Usar "?" solo en los datos del test, no en la cabecera
             if (isTestData) {
                 row[6] = "?";
             } else {
-                // Si la clase es "NA" o "na", la convertimos en "?"
                 if (specificLabel.equalsIgnoreCase("na")) {
                     row[6] = "?";
                 } else {
-                    // Aplicar el mapeo si existe, si no, usar el mismo valor
                     String generalLabel = labelMapping.getOrDefault(specificLabel, specificLabel);
-                    generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9?]", "_"); // Limpiar la etiqueta
-                    row[6] = generalLabel; // Actualizar la causa de muerte
+                    generalLabel = generalLabel.replaceAll("[^a-zA-Z0-9?]", "_");
+                    row[6] = generalLabel;
                 }
             }
 
@@ -96,13 +94,14 @@ public class getARFF {
             arffWriter.write(String.join(",", row) + "\n");
         }
 
-        // Cerrar los archivos
+        // Cerrar archivos
         arffWriter.close();
         reader.close();
     }
 
+
     // Método para guardar Instances en un archivo ARFF
-    private static void saveInstancesToARFF(Instances instances, String fileName) throws IOException {
+    /*private static void saveInstancesToARFF(Instances instances, String fileName) throws IOException {
         // train edo test multzoarekin lan egingo dugun jakin
         String[] split = fileName.split("\\\\");
         String multzoa = split[split.length - 1];
@@ -120,7 +119,7 @@ public class getARFF {
         arffSaver.setInstances(instances);
         arffSaver.setFile(new File(fileName));
         arffSaver.writeBatch();
-    }
+    }*/
 
     // Cargar la agrupación de causas de muerte
     private static Map<String, String> loadLabelMapping() {
