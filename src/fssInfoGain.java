@@ -9,8 +9,6 @@ import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.attribute.Reorder;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class fssInfoGain {
@@ -49,17 +47,9 @@ public class fssInfoGain {
         }
     }
 
-    /**
-     * Procesa los datos de entrenamiento aplicando selección de características
-     *
-     * @param inputPath Ruta del archivo ARFF de entrada
-     * @param outputPath Ruta donde guardar los datos procesados
-     * @return Instancias procesadas
-     * @throws Exception
-     */
-    private static Instances processTrainingData(String inputPath, String outputPath) throws Exception {
+    private static Instances processTrainingData(String inTrainPath, String outTrainPath) throws Exception {
         // Cargar datos de entrenamiento
-        DataSource source = new DataSource(inputPath);
+        DataSource source = new DataSource(inTrainPath);
         Instances data = source.getDataSet();
 
         // Establecer atributo clase (asumimos que se llama "Cause_of_Death")
@@ -70,29 +60,21 @@ public class fssInfoGain {
         System.out.println("📊 Número de atributos antes de la selección: " + data.numAttributes());
 
         // Configurar y aplicar filtro de selección de atributos
-        AttributeSelection filter = createFeatureSelectionFilter();
+        AttributeSelection filter = atributuHautapena();
         filter.setInputFormat(data);
         Instances selectedData = Filter.useFilter(data, filter);
 
         System.out.println("✅ Número de atributos después de la selección: " + selectedData.numAttributes());
 
         // Guardar datos procesados
-        saveArffFile(selectedData, outputPath);
+        saveArffFile(selectedData, outTrainPath);
 
         return selectedData;
     }
 
-    /**
-     * Procesa datos de test/dev ajustándolos al formato de los datos de entrenamiento
-     *
-     * @param inputPath Ruta del archivo ARFF de entrada
-     * @param outputPath Ruta donde guardar los datos procesados
-     * @param trainDataTemplate Datos de entrenamiento procesados (como referencia)
-     * @throws Exception
-     */
-    private static void processTestData(String inputPath, String outputPath, Instances trainDataTemplate) throws Exception {
+    private static void processTestData(String inTestPath, String outTestPath, Instances trainData) throws Exception {
         // Cargar datos de test/dev
-        DataSource source = new DataSource(inputPath);
+        DataSource source = new DataSource(inTestPath);
         Instances testData = source.getDataSet();
 
         // Asegurar que el atributo clase está establecido (si existe)
@@ -101,18 +83,13 @@ public class fssInfoGain {
         }
 
         // Ajustar datos de test para que coincidan con el formato de entrenamiento
-        Instances adjustedData = adjustTestDataToTrainFormat(testData, trainDataTemplate);
+        Instances adjustedData = adjustHeaders(testData, trainData);
 
         // Guardar datos procesados
-        saveArffFile(adjustedData, outputPath);
+        saveArffFile(adjustedData, outTestPath);
     }
 
-    /**
-     * Crea y configura el filtro para selección de características
-     *
-     * @return AttributeSelection configurado
-     */
-    private static AttributeSelection createFeatureSelectionFilter() {
+    private static AttributeSelection atributuHautapena() {
         AttributeSelection filter = new AttributeSelection();
         InfoGainAttributeEval evaluator = new InfoGainAttributeEval();
         Ranker search = new Ranker();
@@ -124,19 +101,11 @@ public class fssInfoGain {
         return filter;
     }
 
-    /**
-     * Ajusta los datos de test para que coincidan con el formato de entrenamiento
-     *
-     * @param testData Datos a ajustar
-     * @param trainDataTemplate Datos de entrenamiento como referencia
-     * @return Instancias ajustadas
-     * @throws Exception
-     */
-    private static Instances adjustTestDataToTrainFormat(Instances testData, Instances trainDataTemplate) throws Exception {
+    private static Instances adjustHeaders(Instances testData, Instances trainData) throws Exception {
         // 1. Eliminar atributos que están en test pero no en train
         ArrayList<Integer> indicesToRemove = new ArrayList<>();
         for (int i = 0; i < testData.numAttributes(); i++) {
-            if (trainDataTemplate.attribute(testData.attribute(i).name()) == null) {
+            if (trainData.attribute(testData.attribute(i).name()) == null) {
                 indicesToRemove.add(i);
             }
         }
@@ -151,8 +120,8 @@ public class fssInfoGain {
 
         // 2. Reordenar atributos para que coincidan con train
         StringBuilder order = new StringBuilder();
-        for (int i = 0; i < trainDataTemplate.numAttributes(); i++) {
-            int idx = testData.attribute(trainDataTemplate.attribute(i).name()).index() + 1;
+        for (int i = 0; i < trainData.numAttributes(); i++) {
+            int idx = testData.attribute(trainData.attribute(i).name()).index() + 1;
             order.append(idx).append(",");
         }
         order.deleteCharAt(order.length() - 1); // Eliminar última coma
@@ -165,13 +134,6 @@ public class fssInfoGain {
         return testData;
     }
 
-    /**
-     * Guarda un conjunto de datos en formato ARFF
-     *
-     * @param data Instancias a guardar
-     * @param outputPath Ruta de destino
-     * @throws Exception
-     */
     private static void saveArffFile(Instances data, String outputPath) throws Exception {
         ArffSaver saver = new ArffSaver();
         saver.setInstances(data);
