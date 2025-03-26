@@ -43,8 +43,8 @@ public class parametroEkorketaSVM {
             System.out.println("Índice de la clase minoritaria: " + minorityClassIndex);
 
             // Parámetros a explorar
-            double[] cValues = {10, 100, 1000, 10000};
-            double[] gammaValues = {0.01, 0.1, 1, 10};
+            double[] cValues = {10, 100, 1000};
+            double[] gammaValues = {0.01, 0.1, 1};
 
 
             double bestFMeasure = 0;
@@ -73,28 +73,26 @@ public class parametroEkorketaSVM {
                     Evaluation eval = new Evaluation(dataTrain);
                     eval.evaluateModel(svm, dataDev);
 
-// Verificar si el modelo predice la clase minoritaria (14)
-                    int predictionsForClass14 = 0;
-                    for (int i = 0; i < dataDev.numInstances(); i++) {
-                        double pred = svm.classifyInstance(dataDev.instance(i));
-                        if ((int) pred == 14) {
-                            predictionsForClass14++;
-                        }
+                    // Obtener accuracy
+                    double accuracy = eval.pctCorrect() / 100.0;
+
+                    // Obtener F1-score macro (promedio de F1-score por clase)
+                    double f1Macro = 0.0;
+                    for (int i = 0; i < dataTrain.numClasses(); i++) {
+                        f1Macro += eval.fMeasure(i);
                     }
-                    System.out.println("Número de predicciones para la clase 14: " + predictionsForClass14);
+                    f1Macro /= dataTrain.numClasses();
 
-// Obtener F-measure de la clase minoritaria
-                    double fMeasure = eval.fMeasure(minorityClassIndex);
-                    System.out.println("C=" + c + ", Gamma=" + gamma + ", F-measure=" + fMeasure);
+                    System.out.println("C=" + c + ", Gamma=" + gamma + ", Accuracy=" + accuracy + ", F1-macro=" + f1Macro);
 
-
-                    // Guardar el mejor modelo encontrado
-                    if (!Double.isNaN(fMeasure) && fMeasure > bestFMeasure) {
-                        bestFMeasure = fMeasure;
+                    // Guardar el mejor modelo basado en F1-macro
+                    if (!Double.isNaN(f1Macro) && f1Macro > bestFMeasure) {
+                        bestFMeasure = f1Macro; // Ahora el criterio es F1-macro
                         bestC = c;
                         bestGamma = gamma;
                         bestModel = svm;
                     }
+
                 }
             }
 
