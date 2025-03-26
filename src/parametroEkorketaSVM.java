@@ -5,10 +5,13 @@ import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+
 public class parametroEkorketaSVM {
     public static void main(String[] args) throws Exception {
 
-        if (args.length != 3) {
+        if (args.length <4) {
             System.out.println("Uso: java SVM <train.arff> <dev.arff> <model.model>");
             return;
         }
@@ -16,6 +19,7 @@ public class parametroEkorketaSVM {
             String inTrainFSSPath = args[0];
             String inDevFSSPath = args[1];
             String outModelPath = args[2]; // Archivo donde se guardará el modelo
+            String outputFilePath = args[3]; // Archivo donde se guardarán los mejores parámetros
 
             // Cargar datasets
             ConverterUtils.DataSource source = new ConverterUtils.DataSource(inTrainFSSPath);
@@ -104,6 +108,15 @@ public class parametroEkorketaSVM {
 
             System.out.println("Mejores parámetros: C=" + bestC + ", Gamma=" + bestGamma);
             System.out.println("Mejor F-measure: " + bestFMeasure);
+
+            // Guardar los parámetros en un archivo de texto
+            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+            writer.write("C=" + bestC + "\n");
+            writer.write("Gamma=" + bestGamma + "\n");
+            writer.close();
+
+            System.out.println("Parámetros guardados en el archivo: " + outputFilePath);
+
         }
         catch (Exception e) {
             e.printStackTrace();
