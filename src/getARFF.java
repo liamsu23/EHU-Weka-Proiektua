@@ -187,7 +187,7 @@ public class getARFF {
         labelMapping.put("postpartum hemorrhage", "Pregnancy_childbirth_and_the_puerperium");
 
         // Malformaciones congénitas (CIE-10: Q00-Q99)
-        labelMapping.put("congenital malformations", "Congenital_Malformations");
+        labelMapping.put("congenital malformation", "Congenital_Malformations");
 
         // Causas externas (CIE-10: V01-Y99)
         labelMapping.put("bite of venomous animal", "Injury_Poisoning_and_External_Causes");

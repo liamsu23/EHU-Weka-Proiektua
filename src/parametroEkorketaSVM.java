@@ -43,8 +43,9 @@ public class parametroEkorketaSVM {
             System.out.println("Índice de la clase minoritaria: " + minorityClassIndex);
 
             // Parámetros a explorar
-            double[] cValues = {1, 10, 100, 1000};
-            double[] gammaValues = {0.001, 0.01, 0.1, 1};
+            double[] cValues = {10, 100, 1000, 10000};
+            double[] gammaValues = {0.01, 0.1, 1, 10};
+
 
             double bestFMeasure = 0;
             double bestC = 0;
@@ -72,9 +73,20 @@ public class parametroEkorketaSVM {
                     Evaluation eval = new Evaluation(dataTrain);
                     eval.evaluateModel(svm, dataDev);
 
-                    // Obtener F-measure de la clase minoritaria
+// Verificar si el modelo predice la clase minoritaria (14)
+                    int predictionsForClass14 = 0;
+                    for (int i = 0; i < dataDev.numInstances(); i++) {
+                        double pred = svm.classifyInstance(dataDev.instance(i));
+                        if ((int) pred == 14) {
+                            predictionsForClass14++;
+                        }
+                    }
+                    System.out.println("Número de predicciones para la clase 14: " + predictionsForClass14);
+
+// Obtener F-measure de la clase minoritaria
                     double fMeasure = eval.fMeasure(minorityClassIndex);
                     System.out.println("C=" + c + ", Gamma=" + gamma + ", F-measure=" + fMeasure);
+
 
                     // Guardar el mejor modelo encontrado
                     if (!Double.isNaN(fMeasure) && fMeasure > bestFMeasure) {
