@@ -5,7 +5,7 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
 
 
-public class basline {
+public class Baseline {
 
     public static void main(String[] args) throws Exception {
 
