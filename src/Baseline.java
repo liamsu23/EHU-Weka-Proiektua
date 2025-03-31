@@ -5,11 +5,11 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils;
 
 
-public class Baseline {
+public class getBaseline {
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length < 2) {
+        if (args.length != 2) {
             System.out.println("Uso: java BaselineRegression <train.arff> <dev.arff>");
             return;
         }
