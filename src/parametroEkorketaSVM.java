@@ -11,7 +11,7 @@ import java.io.FileWriter;
 public class parametroEkorketaSVM {
     public static void main(String[] args) throws Exception {
 
-        if (args.length <4) {
+        if (args.length != 4) {
             System.out.println("Uso: java SVM <train.arff> <dev.arff> <model.model>");
             return;
         }
@@ -39,91 +39,86 @@ public class parametroEkorketaSVM {
             // Imprimir distribución de clases
             System.out.println("Distribución de clases en Train: ");
             printClassDistribution(dataTrain);
-            System.out.println("Distribución de clases en Dev: ");
+            System.out.println("\nDistribución de clases en Dev: ");
             printClassDistribution(dataDev);
 
             // Obtener el índice de la clase minoritaria
             int minorityClassIndex = getMinorityClassIndex(dataTrain);
-            System.out.println("Índice de la clase minoritaria: " + minorityClassIndex);
+            System.out.println("\nÍndice de la clase minoritaria: " + minorityClassIndex);
 
             // Parámetros a explorar
-            double[] cValues = {10, 100, 1000};
-            double[] gammaValues = {0.01, 0.1, 1};
-
+            double[] cValues = {0.1, 1, 10, 100, 1000};
+            double[] gammaValues = {0.01, 0.1, 1, 10, 100};
+            double[] toleranceValues = {1.0e-3, 1.0e-4, 1.0e-5};
 
             double bestFMeasure = 0;
             double bestC = 0;
             double bestGamma = 0;
+            double bestTolerance = 1.0e-3; // Valor por defecto
             SMO bestModel = null;
 
-            System.out.println("🔍 Búsqueda de hiperparámetros");
-            // Búsqueda de hiperparámetros
+            System.out.println("\nBúsqueda de hiperparámetros");
             for (double c : cValues) {
-                System.out.println("Probando C=" + c);
                 for (double gamma : gammaValues) {
-                    System.out.println("Probando Gamma=" + gamma);
-                    SMO svm = new SMO();
+                    for (double tolerance : toleranceValues) {
+                        SMO svm = new SMO();
 
-                    // Configurar SVM con kernel RBF y parámetros
-                    RBFKernel rbfKernel = new RBFKernel();
-                    rbfKernel.setGamma(gamma);
-                    svm.setKernel(rbfKernel);
-                    svm.setC(c);
+                        // Configurar parámetros
+                        RBFKernel rbfKernel = new RBFKernel();
+                        rbfKernel.setGamma(gamma);
+                        svm.setKernel(rbfKernel);
+                        svm.setC(c);
+                        svm.setToleranceParameter(tolerance);
 
-                    // Entrenar con train
-                    svm.buildClassifier(dataTrain);
+                        // Entrenar y evaluar (código existente...)
+                        svm.buildClassifier(dataTrain);
+                        Evaluation eval = new Evaluation(dataTrain);
+                        eval.evaluateModel(svm, dataDev);
 
-                    // Evaluar en dev
-                    Evaluation eval = new Evaluation(dataTrain);
-                    eval.evaluateModel(svm, dataDev);
+                        double f1Macro = 0.0;
+                        for (int i = 0; i < dataTrain.numClasses(); i++) {
+                            f1Macro += eval.fMeasure(i);
+                        }
+                        f1Macro /= dataTrain.numClasses();
 
-                    // Obtener accuracy
-                    double accuracy = eval.pctCorrect() / 100.0;
+                        System.out.println("C=" + c + ", Gamma=" + gamma + ", Tol=" + tolerance + ", F1-macro=" + f1Macro);
 
-                    // Obtener F1-score macro (promedio de F1-score por clase)
-                    double f1Macro = 0.0;
-                    for (int i = 0; i < dataTrain.numClasses(); i++) {
-                        f1Macro += eval.fMeasure(i);
+                        if (!Double.isNaN(f1Macro) && f1Macro > bestFMeasure) {
+                            bestFMeasure = f1Macro;
+                            bestC = c;
+                            bestGamma = gamma;
+                            bestTolerance = tolerance;
+                            bestModel = svm;
+                        }
                     }
-                    f1Macro /= dataTrain.numClasses();
-
-                    System.out.println("C=" + c + ", Gamma=" + gamma + ", Accuracy=" + accuracy + ", F1-macro=" + f1Macro);
-
-                    // Guardar el mejor modelo basado en F1-macro
-                    if (!Double.isNaN(f1Macro) && f1Macro > bestFMeasure) {
-                        bestFMeasure = f1Macro; // Ahora el criterio es F1-macro
-                        bestC = c;
-                        bestGamma = gamma;
-                        bestModel = svm;
-                    }
-
                 }
             }
 
             // Guardar el mejor modelo encontrado
             if (bestModel != null) {
                 SerializationHelper.write(outModelPath, bestModel);
-                System.out.println("✅ Modelo guardado en: " + outModelPath);
+                System.out.println("Modelo guardado en: " + outModelPath);
             }
 
-            System.out.println("Mejores parámetros: C=" + bestC + ", Gamma=" + bestGamma);
+            System.out.println("Mejores parámetros: C=" + bestC +
+                    ", Gamma=" + bestGamma +
+                    ", Tolerance=" + bestTolerance);
             System.out.println("Mejor F-measure: " + bestFMeasure);
 
-            // Guardar los parámetros en un archivo de texto
+            // Guardar parámetros (añado tolerancia)
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
             writer.write("C=" + bestC + "\n");
             writer.write("Gamma=" + bestGamma + "\n");
+            writer.write("Tolerance=" + bestTolerance + "\n");
             writer.close();
 
-            System.out.println("Parámetros guardados en el archivo: " + outputFilePath);
+            System.out.println("Parámetros guardados en: " + outputFilePath);
 
         }
         catch (Exception e) {
             e.printStackTrace();
             System.out.println("ERROR: " + e.getMessage());
         }
-
-
     }
 
     // Método para obtener el índice de la clase minoritaria
