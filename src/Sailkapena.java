@@ -16,8 +16,8 @@ public class Sailkapena {
         }
 
         String inputModelFilePath = args[0];         // Ruta del modelo entrenado
-        String inputTestFSSFilePath = args[1];          // Ruta del archivo de datos de prueba
-        String outputFilePath = args[2];        // Ruta del archivo de salida para las predicciones
+        String inputTestFSSFilePath = args[1];       // Ruta del archivo de datos de prueba
+        String outputFilePath = args[2];             // Ruta del archivo de salida para las predicciones
 
         // Cargar el modelo previamente entrenado
         SMO svm = (SMO) SerializationHelper.read(inputModelFilePath);
@@ -36,6 +36,9 @@ public class Sailkapena {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
         writer.write("Instancia,Predicción\n");
 
+        // Contadores para cada clase
+        int[] classCounts = new int[dataTest.numClasses()];
+
         // Realizar predicciones para cada instancia en el conjunto de prueba
         for (int i = 0; i < dataTest.numInstances(); i++) {
             // Obtener la instancia a predecir
@@ -46,10 +49,20 @@ public class Sailkapena {
 
             // Escribir el ID de la instancia y la clase predicha en el archivo de salida
             writer.write(i + "," + className + "\n");
+
+            // Contar la predicción para la clase correspondiente
+            classCounts[(int) classLabel]++;
         }
 
         // Cerrar el archivo de salida
         writer.close();
         System.out.println("Predicciones guardadas en: " + outputFilePath);
+
+        // Imprimir el conteo de predicciones por clase
+        System.out.println("Conteo de predicciones por clase:");
+        for (int i = 0; i < dataTest.numClasses(); i++) {
+            String className = dataTest.classAttribute().value(i);
+            System.out.println(className + ": " + classCounts[i]);
+        }
     }
 }

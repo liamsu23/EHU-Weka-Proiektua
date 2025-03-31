@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="netlib-java-0.1.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/netlib-java-0.1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

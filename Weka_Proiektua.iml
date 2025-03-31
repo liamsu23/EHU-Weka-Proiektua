@@ -10,5 +10,11 @@
     <orderEntry type="library" name="opencsv-5.10" level="project" />
     <orderEntry type="library" name="commons-lang3-3.12.0" level="project" />
     <orderEntry type="library" name="weka" level="project" />
+    <orderEntry type="library" name="mtj-0.9.14" level="project" />
+    <orderEntry type="library" name="weka (2)" level="project" />
+    <orderEntry type="library" name="weka (3)" level="project" />
+    <orderEntry type="library" name="netlib-java-0.1.0" level="project" />
+    <orderEntry type="library" name="netlib-java-1.1" level="project" />
+    <orderEntry type="library" name="netlib-java-1.0" level="project" />
   </component>
 </module>
