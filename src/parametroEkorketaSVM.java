@@ -8,6 +8,7 @@ import weka.core.converters.ConverterUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
+
 public class parametroEkorketaSVM {
     public static void main(String[] args) throws Exception {
 
