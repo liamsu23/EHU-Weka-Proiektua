@@ -108,6 +108,10 @@ public class parametroEkorketaSVM {
 
             // Guardar parámetros (añado tolerancia)
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+            writer.write("Train=" + inTrainFSSPath + "\n");
+            writer.write("Dev=" + inDevFSSPath + "\n");
+            writer.write("Eredua=" + outModelPath + "\n");
+            writer.write("\n");
             writer.write("C=" + bestC + "\n");
             writer.write("Gamma=" + bestGamma + "\n");
             writer.write("Tolerance=" + bestTolerance + "\n");

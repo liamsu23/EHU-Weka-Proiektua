@@ -82,6 +82,10 @@ public class parametroEkorketaSVM_3 {
 
             // Guardar los parámetros en un archivo
             BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
+            writer.write("Train=" + inTrainFSSPath + "\n");
+            writer.write("Dev=" + inDevFSSPath + "\n");
+            writer.write("Eredua=" + outModelPath + "\n");
+            writer.write("\n");
             writer.write("Kernel=" + bestKernel + "\n");
             writer.write("C=" + bestC + "\n");
             writer.write("Gamma=" + bestGamma + "\n");
