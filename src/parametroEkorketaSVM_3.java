@@ -9,8 +9,12 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 public class parametroEkorketaSVM_3 {
-    public static void main(String[] args) throws Exception {
+    static double bestFMeasure = 0;
+    static double bestC = 0, bestGamma = 0, bestDegree = 0, bestOmega = 0, bestSigma = 0;
+    static String bestKernel = "";
+    static SMO bestModel = null;
 
+    public static void main(String[] args) throws Exception {
         if (args.length < 4) {
             System.out.println("Uso: java SVM <train.arff> <dev.arff> <model.model> <output.txt>");
             return;
@@ -43,14 +47,8 @@ public class parametroEkorketaSVM_3 {
             double[] sigmaValues = {0.01, 0.1, 1};
             Kernel[] kernels = {new RBFKernel(), new PolyKernel(), new Puk()};
 
-            double bestFMeasure = 0;
-            double bestC = 0, bestGamma = 0, bestDegree = 0, bestOmega = 0, bestSigma = 0;
-            String bestKernel = "";
-            SMO bestModel = null;
-
             System.out.println("🔍 Búsqueda de hiperparámetros");
             for (Kernel kernel : kernels) {
-                String kernelName = kernel.getClass().getSimpleName();
                 for (double c : cValues) {
                     if (kernel instanceof PolyKernel) {
                         for (int degree : polyDegrees) {
@@ -120,5 +118,18 @@ public class parametroEkorketaSVM_3 {
                 (kernel instanceof RBFKernel ? ", Gamma=" + gamma : "") +
                 (kernel instanceof Puk ? ", Omega=" + omega + ", Sigma=" + sigma : "") +
                 ", F1-macro=" + f1Macro);
+
+        if (!Double.isNaN(f1Macro) && f1Macro > bestFMeasure) {
+            bestFMeasure = f1Macro;
+            bestKernel = kernel.getClass().getSimpleName();
+            bestC = c;
+            if (kernel instanceof RBFKernel) bestGamma = gamma;
+            if (kernel instanceof PolyKernel) bestDegree = degree;
+            if (kernel instanceof Puk) {
+                bestOmega = omega;
+                bestSigma = sigma;
+            }
+            bestModel = svm;
+        }
     }
 }

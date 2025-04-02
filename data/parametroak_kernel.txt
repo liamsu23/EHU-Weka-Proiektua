@@ -1,6 +1,6 @@
-Kernel=
-C=0.0
-Gamma=0.0
-Degree=0.0
-Omega=0.0
-Sigma=0.0
+Kernel=Puk
+C=10.0
+Gamma=0.1
+Degree=2.0
+Omega=0.1
+Sigma=1.0
