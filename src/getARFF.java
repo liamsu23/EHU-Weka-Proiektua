@@ -8,32 +8,32 @@ import java.util.*;
 
 public class getARFF {
     public static void main(String[] args) throws IOException {
-        // Verificar que se han pasado los argumentos correctamente
+        // Argumentuak ondo pasatu diren konprobatu
         if (args.length != 4) {
             System.out.println("Erabilera: java getArff <train_csv> <test_csv> <train_RAW.arff> <test_RAW.arff>");
             return;
         }
-        String inTrainCSVPath = args[0]; // Ruta al archivo CSV de entrenamiento
-        String inTestCSVPath = args[1]; // Ruta al archivo CSV de prueba
-        String outTrainARFFPath = args[2]; // Ruta al archivo ARFF de salida de entrenamiento
-        String outTestARFFPath = args[3]; // Ruta al archivo ARFF de salida de prueba
+        String inTrainCSVPath = args[0]; // (in) CSV fitxategiaren helbidea, train
+        String inTestCSVPath = args[1]; // (in) CSV fitxategiaren helbidea, test
+        String outTrainARFFPath = args[2]; // (out) ARFF fitxategiaren helbide, train
+        String outTestARFFPath = args[3]; // (out) ARFF fitxategiaren helbide, test
 
         Map<String, String> labelMapping = loadLabelMapping();
 
         try {
-            // 1. Procesar train para obtener categorías y lugares usados
+            // 1. train prozesatu erabilitako mailak eta tokiak lortzeko
             Set<String> trainCategories = new HashSet<>();
             Set<String> places = new HashSet<>();
             processCSV(inTrainCSVPath, labelMapping, false, trainCategories, places);
 
-            // 2. Asegurar que todas las categorías del mapeo estén incluidas
+            // 2. Mapeatutako maila guztiak barne daudela ziurtatu
             trainCategories.addAll(labelMapping.values());
 
-            // 3. Convertir archivos usando las mismas categorías
+            // 3. Fitxategiak bihurtu maila berdinak erabiliz
             convertARFF(inTrainCSVPath, outTrainARFFPath, labelMapping, false, places, trainCategories);
             convertARFF(inTestCSVPath, outTestARFFPath, labelMapping, true, places, trainCategories);
 
-            System.out.println("Archivos ARFF generados exitosamente.");
+            System.out.println("ARFF fitxategiak zuzen sortu dira.");
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -62,15 +62,15 @@ public class getARFF {
         CSVReader reader = new CSVReader(new FileReader(csvFile));
         FileWriter writer = new FileWriter(arffFile);
 
-        // Escribir cabecera usando tu método
+        // header idatzi
         writeHeaderARFF(writer, places, categories);
 
-        // Procesar y escribir datos
+        // Datuak prozesatu eta idatzi
         List<String[]> data = reader.readAll();
         for (int i = 1; i < data.size(); i++) {
             String[] row = data.get(i);
 
-            // Procesar Cause_of_Death
+            // Cause_of_Death prozesatu
             if (isTest || row[6].equalsIgnoreCase("na")) {
                 row[6] = "?";
             } else {
@@ -78,7 +78,7 @@ public class getARFF {
                         .replaceAll("[^a-zA-Z0-9]", "_");
             }
 
-            // Limpiar narrative
+            // narrative garbitu
             row[5] = "\"" + cleanNarrative(row[5]) + "\"";
 
             writer.write(String.join(",", row) + "\n");
@@ -88,7 +88,7 @@ public class getARFF {
         writer.close();
     }
 
-    // Escribir la cabecera
+    // header idazteko metodoa
     private static void writeHeaderARFF(FileWriter fw, Set<String> places, Set<String> generalCategories) throws IOException {
         try {
             fw.write("@RELATION muertes_causas\n\n");
@@ -105,7 +105,7 @@ public class getARFF {
         }
     }
 
-    // Limpiar el texto de Narrative
+    // narrative garbitzeko metodoa
     private static String cleanNarrative(String text) {
         return text.replace("#", "").replace("?", "").replace("!", "").replace(",", "")
                 .replace("\"", "").replace("'", "").replace(";", "").replace(":", "")
@@ -114,11 +114,11 @@ public class getARFF {
                 .trim();
     }
 
-    // Cargar la agrupación de causas de muerte
+    // Hiltze arrazoien multzokatzea kargatu
     private static Map<String, String> loadLabelMapping() {
         Map<String, String> labelMapping = new HashMap<>();
 
-        // Enfermedades infecciosas (CIE-10: A00-B99)
+        // Gaixotasun infekziosoak (CIE-10: A00-B99)
         labelMapping.put("diarrhea/dysentery", "Certain_infectious_and_Parasitic_Diseases");
         labelMapping.put("other infectious diseases", "Certain_infectious_and_Parasitic_Diseases");
         labelMapping.put("aids", "Certain_infectious_and_Parasitic_Diseases");
@@ -133,7 +133,7 @@ public class getARFF {
         labelMapping.put("hepatitis", "Certain_infectious_and_Parasitic_Diseases");
         labelMapping.put("tetanus", "Certain_infectious_and_Parasitic_Diseases");
 
-        // Tumores (CIE-10: C00-D49)
+        // Tumoreak (CIE-10: C00-D49)
         labelMapping.put("leukemia/lymphomas", "Neoplasms");
         labelMapping.put("colorectal cancer", "Neoplasms");
         labelMapping.put("lung cancer", "Neoplasms");
@@ -146,50 +146,50 @@ public class getARFF {
         labelMapping.put("pancreatic cancer", "Neoplasms");
         labelMapping.put("other cancers", "Neoplasms");
 
-        // Enfermedades endocrinas (CIE-10: E00-E90)
+        // Gaixotasun endokrinoak (CIE-10: E00-E90)
         labelMapping.put("diabetes", "Endocrine_Nutritional_and_Metabolic_Diseases");
         labelMapping.put("malnutrition", "Endocrine_Nutritional_and_Metabolic_Diseases");
         labelMapping.put("obesity", "Endocrine_Nutritional_and_Metabolic_Diseases");
 
-        // Enfermedades neurológicas (CIE-10: G00-G99)
+        // Gaixotasun neurologikoak (CIE-10: G00-G99)
         labelMapping.put("epilepsy", "Diseases_of_the_Nervous_System");
         labelMapping.put("alzheimer", "Diseases_of_the_Nervous_System");
         labelMapping.put("parkinson", "Diseases_of_the_Nervous_System");
 
-        // Enfermedades cardiovasculares (CIE-10: I00-I99)
+        // Gaixotasun kardiobaskularrak (CIE-10: I00-I99)
         labelMapping.put("stroke", "Diseases_of_the_circulatory_system");
         labelMapping.put("acute myocardial infarction", "Diseases_of_the_circulatory_system");
         labelMapping.put("heart failure", "Diseases_of_the_circulatory_system");
         labelMapping.put("hypertension", "Diseases_of_the_circulatory_system");
         labelMapping.put("cardiac arrest", "Diseases_of_the_circulatory_system");
 
-        // Enfermedades respiratorias (CIE-10: J00-J99)
+        // Arnasketa-gaixotasunak (CIE-10: J00-J99)
         labelMapping.put("pneumonia", "Diseases_of_Respiratory_System");
         labelMapping.put("asthma", "Diseases_of_Respiratory_System");
         labelMapping.put("copd", "Diseases_of_Respiratory_System");
         labelMapping.put("tuberculosis respiratory", "Diseases_of_Respiratory_System");
 
-        // Enfermedades digestivas (CIE-10: K00-K95)
+        // Digestio-gaixotasunak (CIE-10: K00-K95)
         labelMapping.put("cirrhosis", "Diseases_of_the_Digestive_System");
         labelMapping.put("other digestive diseases", "Diseases_of_the_Digestive_System");
         labelMapping.put("gastritis", "Diseases_of_the_Digestive_System");
         labelMapping.put("peptic ulcer", "Diseases_of_the_Digestive_System");
 
-        // Enfermedades genitourinarias (CIE-10: N00-N99)
+        // Gaixotasun genitourinarioak (CIE-10: N00-N99)
         labelMapping.put("renal failure", "Diseases_of_the_Genitourinary_System");
         labelMapping.put("kidney disease", "Diseases_of_the_Genitourinary_System");
 
-        // Embarazo/parto (CIE-10: O00-O9A)
+        // Haurdunaldi - Erditze (CIE-10: O00-O9A)
         labelMapping.put("preterm delivery", "Pregnancy_childbirth_and_the_puerperium");
         labelMapping.put("stillbirth", "Pregnancy_childbirth_and_the_puerperium");
         labelMapping.put("maternal", "Pregnancy_childbirth_and_the_puerperium");
         labelMapping.put("birth asphyxia", "Pregnancy_childbirth_and_the_puerperium");
         labelMapping.put("postpartum hemorrhage", "Pregnancy_childbirth_and_the_puerperium");
 
-        // Malformaciones congénitas (CIE-10: Q00-Q99)
+        // Sortzetiko malformazioak (CIE-10: Q00-Q99)
         labelMapping.put("congenital malformation", "Congenital_Malformations");
 
-        // Causas externas (CIE-10: V01-Y99)
+        // Kanpo-arrazoiak (CIE-10: V01-Y99)
         labelMapping.put("bite of venomous animal", "Injury_Poisoning_and_External_Causes");
         labelMapping.put("poisonings", "Injury_Poisoning_and_External_Causes");
         labelMapping.put("road traffic", "External_Causes_of_Morbidity_and_Mortality");
