@@ -75,7 +75,7 @@ public class parametroEkorketaSVM {
 
             // Obtener el índice de la clase minoritaria
             int minorityClassIndex = getMinorityClassIndex(dataTrain);
-            System.out.println("\nÍndice de la clase minoritaria: " + minorityClassIndex);
+            System.out.println("\nIndice de la clase minoritaria: " + minorityClassIndex);
 
             // Parámetros a explorar
             double[] cValues = {0.1, 1, 10, 100, 1000};
