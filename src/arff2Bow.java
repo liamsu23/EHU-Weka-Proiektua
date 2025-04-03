@@ -10,6 +10,31 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
+
+/**
+ * Klase honek ARFF formatuko datu-multzoak Bag-of-Words (BoW) errepresentaziora bihurtzen ditu,
+ * testu-eremuen prozesamendua eginez eta hitz-hiztegi bat sortuz.
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Entrenamendu-datuak prozesatu eta hitz-hiztegia sortu (StringToWordVector)</li>
+ *   <li>Hiztegi berbera erabili test eta dev multzoak prozesatzeko (FixedDictionaryStringToWordVector)</li>
+ *   <li>Klase-atributua azken posiziora mugitu (Reorder filtroa)</li>
+ *   <li>Bektore berdinak ziurtatu train, dev eta test multzoetan</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java arffToBow train.arff dev.arff test.arff hiztegia.txt train_BOW.arff dev_BOW.arff test_BOW.arff</pre>
+ *
+ * <p>Ezaugarri teknikoak:</p>
+ * <ul>
+ *   <li>Pertsonalizazioa: Karaktere bereziak kentzen ditu</li>
+ *   <li>Hitz-kontaketa: BoW errepresentazioan hitzen maiztasuna kontserbatzen du</li>
+ *   <li>Kontsistentzia: Dev/Test multzoek train-eko hiztegi bera erabiltzen dute</li>
+ *   <li>Klasearen kudeaketa: "Cause_of_Death" atributua automatikoki detektatzen du</li>
+ * </ul>
+ */
+
 public class arff2Bow {
     public static void main(String[] args) throws Exception {
         if (args.length != 7) {
