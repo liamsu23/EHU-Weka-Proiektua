@@ -13,7 +13,7 @@ public class parametroEkorketaSVM {
     public static void main(String[] args) throws Exception {
 
         if (args.length != 4) {
-            System.out.println("Uso: java SVM <train.arff> <dev.arff> <model.model>");
+            System.out.println("Uso: java SVM <train.arff> <dev.arff> <model.model> <parameters.txt>");
             return;
         }
         try {

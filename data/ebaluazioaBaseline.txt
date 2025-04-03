@@ -1,0 +1,47 @@
+=== Dev modeloaren ebaluazioa ===
+Correctly Classified Instances         596               57.1977 %
+Incorrectly Classified Instances       446               42.8023 %
+Kappa statistic                          0.5102
+Mean absolute error                      0.0783
+Root mean squared error                  0.1983
+Relative absolute error                 66.2504 %
+Root relative squared error             81.5982 %
+Total Number of Instances             1042     
+=== Nahasmen matrizea ====== Confusion Matrix ===
+
+   a   b   c   d   e   f   g   h   i   j   k   l   m   n   o   <-- classified as
+   9   1   0   1   8   4   6   1   0   8   4   0   2   5   0 |   a = Other_Non_communicable_Diseases
+   0  12   0   0   0   0   3   1   0   4   1   1   0   1   0 |   b = Injury_Poisoning_and_External_Causes
+   0   0   3   0   0   0   0  14   0   0   0   0   0   0   0 |   c = Congenital_Malformations
+   3   0   0   7   1   2   0   0   1   3   4   0   1   3   0 |   d = Diseases_of_the_Digestive_System
+   4   0   0   1  25   0   3   0   0   2   1   0   3   3   1 |   e = Neoplasms
+   1   0   0   3   0  10   6   1   4  11   3   0   0   2   0 |   f = Diseases_of_the_Genitourinary_System
+   1   0   0   1   0   1  65   3   2   6  10   0   8   8   0 |   g = Diseases_of_the_circulatory_system
+   1   0   0   0   1   0   0 165   0   4   1   0   1   1   0 |   h = Pregnancy_childbirth_and_the_puerperium
+   0   0   0   1   2   4   9   1  11   2   6   0   1   4   0 |   i = Endocrine_Nutritional_and_Metabolic_Diseases
+   2   1   0   4   4   1  10  16   3 117  26   2   2  13   1 |   j = Certain_infectious_and_Parasitic_Diseases
+   0   0   0   1   1   3   9   5   1  27  58   0   2  11   0 |   k = Diseases_of_Respiratory_System
+   0   1   0   0   0   0   0   0   0   7   2   6   0   4   0 |   l = Other_Defined_Causes_of_Child_Deaths
+   0   0   0   0   0   1   9   1   1   8   7   0   9   6   0 |   m = Other_Cardiovascular_Diseases
+   1   5   0   1   0   0   4   2   2  10   7   2   0  98   2 |   n = External_Causes_of_Morbidity_and_Mortality
+   0   0   0   0   1   0   1   1   0   2   0   0   0   2   1 |   o = Diseases_of_the_Nervous_System
+=== Precision ====== Detailed Accuracy By Class ===
+
+                 TP Rate  FP Rate  Precision  Recall   F-Measure  MCC      ROC Area  PRC Area  Class
+                 0,184    0,013    0,409      0,184    0,254      0,251    0,859     0,335     Other_Non_communicable_Diseases
+                 0,522    0,008    0,600      0,522    0,558      0,550    0,887     0,557     Injury_Poisoning_and_External_Causes
+                 0,176    0,000    1,000      0,176    0,300      0,417    0,953     0,336     Congenital_Malformations
+                 0,280    0,013    0,350      0,280    0,311      0,298    0,857     0,285     Diseases_of_the_Digestive_System
+                 0,581    0,018    0,581      0,581    0,581      0,563    0,907     0,541     Neoplasms
+                 0,244    0,016    0,385      0,244    0,299      0,284    0,902     0,333     Diseases_of_the_Genitourinary_System
+                 0,619    0,064    0,520      0,619    0,565      0,514    0,921     0,633     Diseases_of_the_circulatory_system
+                 0,948    0,053    0,782      0,948    0,857      0,831    0,979     0,865     Pregnancy_childbirth_and_the_puerperium
+                 0,268    0,014    0,440      0,268    0,333      0,323    0,909     0,383     Endocrine_Nutritional_and_Metabolic_Diseases
+                 0,579    0,112    0,555      0,579    0,567      0,460    0,820     0,605     Certain_infectious_and_Parasitic_Diseases
+                 0,492    0,078    0,446      0,492    0,468      0,397    0,807     0,501     Diseases_of_Respiratory_System
+                 0,300    0,005    0,545      0,300    0,387      0,396    0,948     0,322     Other_Defined_Causes_of_Child_Deaths
+                 0,214    0,020    0,310      0,214    0,254      0,232    0,830     0,191     Other_Cardiovascular_Diseases
+                 0,731    0,069    0,609      0,731    0,664      0,613    0,932     0,732     External_Causes_of_Morbidity_and_Mortality
+                 0,125    0,004    0,200      0,125    0,154      0,153    0,799     0,215     Diseases_of_the_Nervous_System
+Weighted Avg.    0,572    0,059    0,557      0,572    0,553      0,507    0,889     0,583     
+Mean Absolute Error (MAE): 0.07825585759689106Root Mean Squared Error (RMSE): 0.19830153641642972

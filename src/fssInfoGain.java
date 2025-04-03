@@ -93,7 +93,7 @@ public class fssInfoGain {
         AttributeSelection filter = new AttributeSelection();
         InfoGainAttributeEval evaluator = new InfoGainAttributeEval();
         Ranker search = new Ranker();
-        search.setNumToSelect(100); // Número de atributos a seleccionar
+        search.setNumToSelect(1000); // Número de atributos a seleccionar
 
         filter.setEvaluator(evaluator);
         filter.setSearch(search);
