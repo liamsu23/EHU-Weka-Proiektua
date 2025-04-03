@@ -84,7 +84,7 @@ public class parametroEkorketaSVM_3 {
             double[] sigmaValues = {0.01, 0.1, 1};
             Kernel[] kernels = {new RBFKernel(), new PolyKernel(), new Puk()};
 
-            System.out.println("🔍 Búsqueda de hiperparámetros");
+            System.out.println("Búsqueda de hiperparámetros");
             for (Kernel kernel : kernels) {
                 for (double c : cValues) {
                     if (kernel instanceof PolyKernel) {
@@ -114,7 +114,7 @@ public class parametroEkorketaSVM_3 {
             // Guardar el mejor modelo encontrado
             if (bestModel != null) {
                 SerializationHelper.write(outModelPath, bestModel);
-                System.out.println("✅ Modelo guardado en: " + outModelPath);
+                System.out.println("Modelo guardado en: " + outModelPath);
             }
 
             // Guardar los parámetros en un archivo
