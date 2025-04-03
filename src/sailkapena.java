@@ -1,23 +1,50 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-import java.io.IOException;
 import weka.classifiers.functions.SMO;
-import weka.classifiers.functions.supportVector.RBFKernel;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils;
 
-public class Sailkapena {
+
+/**
+ * Klase honek aurrez entrenatutako SVM eredu bat erabiltzen du test-multzo batean
+ * predikzioak egiteko, eta emaitzak fitxategi batean gordetzen ditu.
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Aurrez entrenatutako SVM eredua kargatu (.model fitxategitik)</li>
+ *   <li>Test-multzoko datuak kargatu (.arff fitxategitik)</li>
+ *   <li>Klase-atributua automatikoki ezarri (azken atributua)</li>
+ *   <li>Instantzia bakoitzari predikzioa egin</li>
+ *   <li>Emaitzak .txt fitxategi batean gorde (instantzia-zenbakia eta predikzioa)</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java sailkapena SMVopt.model test_BOW_FSS.arff predictions.txt</pre>
+ *
+ * <p>Output formatua:</p>
+ * <pre>
+ * Instantzia-zenbakia, Predikzioa
+ * </pre>
+ *
+ * <p>Ohar bereziak:</p>
+ * <ul>
+ *   <li>SVM eredua (SMO) erabiltzen du predikzioetarako</li>
+ *   <li>Test-multzoak klase-etiketarik ez badu, "?" bezala tratatzen du</li>
+ * </ul>
+ */
+
+public class sailkapena {
     public static void main(String[] args) throws Exception {
 
         if (args.length != 3) {
-            System.out.println("Uso: java Sailkapena <model.model> <test.arff> <test.predictions.txt>");
+            System.out.println("Uso: java Sailkapena <SMVopt.model> <test_BOW_FSS.arff> <predictions.txt>");
             return;
         }
 
         String inputModelFilePath = args[0];         // Ruta del modelo entrenado
-        String inputTestFSSFilePath = args[1];       // Ruta del archivo de datos de prueba
-        String outputFilePath = args[2];             // Ruta del archivo de salida para las predicciones
+        String inputTestFSSFilePath = args[1];          // Ruta del archivo de datos de prueba
+        String outputFilePath = args[2];        // Ruta del archivo de salida para las predicciones
 
         // Cargar el modelo previamente entrenado
         SMO svm = (SMO) SerializationHelper.read(inputModelFilePath);
@@ -36,9 +63,6 @@ public class Sailkapena {
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath));
         writer.write("Instancia,Predicción\n");
 
-        // Contadores para cada clase
-        int[] classCounts = new int[dataTest.numClasses()];
-
         // Realizar predicciones para cada instancia en el conjunto de prueba
         for (int i = 0; i < dataTest.numInstances(); i++) {
             // Obtener la instancia a predecir
@@ -49,20 +73,10 @@ public class Sailkapena {
 
             // Escribir el ID de la instancia y la clase predicha en el archivo de salida
             writer.write(i + "," + className + "\n");
-
-            // Contar la predicción para la clase correspondiente
-            classCounts[(int) classLabel]++;
         }
 
         // Cerrar el archivo de salida
         writer.close();
         System.out.println("Predicciones guardadas en: " + outputFilePath);
-
-        // Imprimir el conteo de predicciones por clase
-        System.out.println("Conteo de predicciones por clase:");
-        for (int i = 0; i < dataTest.numClasses(); i++) {
-            String className = dataTest.classAttribute().value(i);
-            System.out.println(className + ": " + classCounts[i]);
-        }
     }
 }
