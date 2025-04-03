@@ -8,7 +8,43 @@ import weka.filters.supervised.instance.Resample;
 
 import java.io.File;
 
-public class getSplitBiasToUniformClass {
+
+/**
+ * Klase honek ARFF formatuko datu-multzoak banaketa egoki batean partizionatzeko
+ * funtzionalitateak ematen ditu, machine learning ereduen entrenamendurako eta garapenerako.
+ *
+ * <p>Prozesu honek hurrengo urratsak egiten ditu:</p>
+ * <ol>
+ *   <li>Datu-multzo originala kargatzen du</li>
+ *   <li>Klase-desoreka konpontzen du Resample filtroa aplikatuz (biasToUniformClass)</li>
+ *   <li>Datuak ausaz permutatzen ditu (Randomize)</li>
+ *   <li>Datuak bi multzotan banatzen ditu:
+ *     <ul>
+ *       <li>Entrenamendurako multzoa (80%)</li>
+ *       <li>Garapenerako multzoa (20%)</li>
+ *     </ul>
+ *   </li>
+ * </ol>
+ *
+ * <p>Programak hiru argumentu hauek behar ditu:</p>
+ * <ol>
+ *   <li>train_RAW.arff: Sarrerako ARFF fitxategiaren path-a (datu-multzo osoa)</li>
+ *   <li>train_split_RAW.arff: Irteerako entrenamendu ARFF fitxategiaren path-a (80%)</li>
+ *   <li>dev_split_RAW.arff: Irteerako garapen ARFF fitxategiaren path-a (20%)</li>
+ * </ol>
+ *
+ * <p>Klasearen ezaugarri nagusiak:</p>
+ * <ul>
+ *   <li>Klase-balantzea: biasToUniformClass parametroa erabiliz klase-minoritarioen pisua handitzen du</li>
+ *   <li>Erreproduzigarritasuna: RandomSeed finkoak erabiliz emaitza berberak lortzeko</li>
+ *   <li>Banaketa proportzionala: 80/20 erlazioa mantentzen du banaketan</li>
+ * </ul>
+ *
+ * <p>Oharra: Klaseak Weka liburutegiaren Instantziak eta Filter klaseak erabiltzen ditu
+ * datuak prozesatzeko eta manipulatzeko.</p>
+ */
+
+public class getSplit {
     public static void main(String[] args) throws Exception {
         // Validación de argumentos
         if (args.length != 3) {
