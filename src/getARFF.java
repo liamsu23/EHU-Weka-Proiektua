@@ -6,6 +6,44 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
+
+/**
+ * Klase honek CSV formatuko datu-medikuak ARFF formatura (Attribute-Relation File Format) bihurtzeko
+ * funtzionalitateak ematen ditu, Weka tresnarekin lan egiteko prestatuak.
+ *
+ * <p>Bihurketak hainbat urrats egiten ditu:</p>
+ * <ol>
+ *   <li>CSV fitxategiak kargatzen ditu (entrenamendurako eta probarako)</li>
+ *   <li>Testu-eremuak prozesatzen ditu (karaktere bereziak kenduz)</li>
+ *   <li>Hiltze-arrazoiak kategorizatzen ditu CIE-10 estandar medikoaren arabera</li>
+ *   <li>ARFF fitxategiak sortzen ditu atributu egokiak definituta</li>
+ * </ol>
+ *
+ * <p>Programak lau argumentu hauek behar ditu:</p>
+ * <ol>
+ *   <li>train_csv: Entrenamendurako CSV fitxategiaren path-a</li>
+ *   <li>test_csv: Probarako CSV fitxategiaren path-a</li>
+ *   <li>train_RAW.arff: Irteerako entrenamendu ARFF fitxategiaren path-a</li>
+ *   <li>test_RAW.arff: Irteerako proba ARFF fitxategiaren path-a</li>
+ * </ol>
+ *
+ * <p>Klaseak hainbat eremu prozesatzen ditu:</p>
+ * <ul>
+ *   <li>ID: Identifikadore numerikoa</li>
+ *   <li>Module: Adina taldea (Adult, Child, Neonate)</li>
+ *   <li>Site: Kokapena</li>
+ *   <li>Open_Response: Testu deskribatzailea</li>
+ *   <li>Cause_of_Death: Hiltze-arrazoia (CIE-10 arabera kategorizatua)</li>
+ * </ul>
+ *
+ * <p>Datuen aurreprozesamenduak honako hauek barne hartzen ditu:</p>
+ * <ul>
+ *   <li>Testu-eremuetan karaktere bereziak ezabatzea</li>
+ *   <li>Hiltze-arrazoien estandarizazioa eta kategorizazioa</li>
+ *   <li>Datu faltatsuen kudeaketa ("?" balioarekin)</li>
+ * </ul>
+ */
+
 public class getARFF {
     public static void main(String[] args) throws IOException {
         // Argumentuak ondo pasatu diren konprobatu
