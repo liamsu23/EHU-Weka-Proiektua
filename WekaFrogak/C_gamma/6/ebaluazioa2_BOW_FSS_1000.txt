@@ -1,0 +1,5 @@
+Ebaluazioa ez-zintzoa (Resubstitution Error): Accuracy: 94.60043196544277% F1-Score (Macro): 0.9458836180177898
+
+Ebaluazioa 10-Fold Cross-Validation: Accuracy: 54.25965922726182% F1-Score (Macro): 0.5386902238250428
+
+Ebaluazio Hold-Out (dev multzoarekin): Accuracy: 53.93474088291747% F1-Score (Macro): 0.5340115010215949

@@ -1,0 +1,6 @@
+Train=.\1\train_split_BOW.arff
+Dev=.\1\dev_split_BOW.arff
+Eredua=.\1\proba_BOW.model
+
+C=100.0
+Gamma=0.01

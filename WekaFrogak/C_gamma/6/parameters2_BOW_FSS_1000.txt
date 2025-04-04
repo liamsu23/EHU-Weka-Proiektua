@@ -1,0 +1,10 @@
+Train=.\6\train_split_BOW_FSS_1000.arff
+Dev=.\6\dev_split_BOW_FSS_1000.arff
+Eredua=.\6\proba2_BOW_FSS_1000.model
+
+Kernel=RBFKernel
+C=1000.0
+Gamma=0.01
+Degree=0.0
+Omega=0.0
+Sigma=0.0

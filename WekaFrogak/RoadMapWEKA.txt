@@ -1,0 +1,23 @@
+Parametros: C y Gamma
+	Archivos: train_split_BOW.arff y dev_split_BOW..arff
+	
+	Atributos:1000
+		Archivos: train_split_BOW_FSS_1000.arff y dev_split_BOW_FSS_1000.arff 
+		Archivos: train_split_TFIDF_1000.arff y dev_split_TFIDF_1000.arff 
+
+	Atributos:2000
+		Archivos: train_split_BOW_FSS_2000.arff y dev_split_BOW_FSS_2000.arff 
+		Archivos: train_split_TFIDF_2000.arff y dev_split_TFIDF_2000.arff 
+	
+Parametros: C , Gamma y kernel
+	Archivos: train_split_BOW.arff y dev_split_BOW..arff
+	
+	Atributos:1000
+		Archivos: train_split_BOW_FSS_1000.arff y dev_split_BOW_FSS_1000.arff 
+		Archivos: train_split_TFIDF_1000.arff y dev_split_TFIDF_1000.arff 
+
+	Atributos:2000
+		Archivos: train_split_BOW_FSS_2000.arff y dev_split_BOW_FSS_2000.arff 
+		Archivos: train_split_TFIDF_2000.arff y dev_split_TFIDF_2000.arff 
+
+Parametros: C , Gamma y Tolerance(?)

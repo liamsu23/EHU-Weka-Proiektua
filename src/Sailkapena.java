@@ -1,11 +1,10 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import weka.classifiers.functions.SMO;
-import weka.classifiers.functions.supportVector.RBFKernel;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class Sailkapena {
     public static void main(String[] args) throws Exception {
@@ -26,6 +25,7 @@ public class Sailkapena {
         // Cargar el conjunto de datos de prueba
         ConverterUtils.DataSource sourceTest = new ConverterUtils.DataSource(inputTestFSSFilePath);
         Instances dataTest = sourceTest.getDataSet();
+
 
         // Establecer la clase objetivo (última columna) en el conjunto de datos de prueba
         if (dataTest.classIndex() == -1) {

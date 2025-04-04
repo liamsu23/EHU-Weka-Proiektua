@@ -1,0 +1,6 @@
+Train=.\2\train_split_BOW_FSS_1000.arff
+Dev=.\2\dev_split_BOW_FSS_1000.arff
+Eredua=.\2\proba_BOW_FSS_1000.model
+
+C=1000.0
+Gamma=0.01

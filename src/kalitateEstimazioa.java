@@ -1,14 +1,14 @@
+import weka.classifiers.Evaluation;
+import weka.classifiers.functions.SMO;
+import weka.classifiers.functions.supportVector.RBFKernel;
+import weka.core.Instances;
+import weka.core.SerializationHelper;
+import weka.core.converters.ConverterUtils;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
-
-import weka.classifiers.functions.SMO;
-import weka.classifiers.functions.supportVector.RBFKernel;
-import weka.core.Instances;
-import weka.core.converters.ConverterUtils;
-import weka.classifiers.Evaluation;
-import weka.core.SerializationHelper;
 
 public class kalitateEstimazioa {
     public static void main(String[] args) throws Exception {
@@ -73,12 +73,14 @@ public class kalitateEstimazioa {
         rbfKernel.setGamma(bestGamma);
         svm.setKernel(rbfKernel);
         svm.setC(bestC);
-        svm.setToleranceParameter(bestTolerance);
+        //svm.setToleranceParameter(bestTolerance);
 
         // Entrenar el modelo con el conjunto de datos combinado (train + dev)
+        System.out.println("Entrenando el modelo SVM...");
         svm.buildClassifier(dataTrain);
 
         // Guardar el modelo final
+        System.out.println("Guardando el modelo entrenado...");
         SerializationHelper.write(outModelPath, svm);
         System.out.println("Modelo final guardado en: " + outModelPath);
 
@@ -105,7 +107,7 @@ public class kalitateEstimazioa {
         writer.write("Accuracy: " + evalCrossValidation.pctCorrect() + "%");
         writer.write("F1-Score (Macro): " + evalCrossValidation.weightedFMeasure());
 
-        // 3. Hold-out estratificado y repetido (opcional)
+        // 3. Hold-out estratificado
         // Esto es una evaluación Hold-out con división estratificada y repetida
         // Puede utilizarse como un conjunto de pruebas más robusto.
         Evaluation evalHoldOut = new Evaluation(dataTrain);
@@ -116,7 +118,7 @@ public class kalitateEstimazioa {
         writer.write("\nEbaluazio Hold-Out (dev multzoarekin): ");
         writer.write("Accuracy: " + evalHoldOut.pctCorrect() + "%");
         writer.write("F1-Score (Macro): " + evalHoldOut.weightedFMeasure());
-
+        /*
         // Si deseas repetir el Hold-out y calcular un promedio de las métricas
         // puedes realizar varias repeticiones (opcional):
         // Repeticiones del Hold-Out para obtener un intervalo de confianza
@@ -136,7 +138,7 @@ public class kalitateEstimazioa {
         writer.write("\nEbaluazio Hold-Out (bb errepikapenak: " + numRepetitions + "):");
         writer.write("Accuracy bb: " + avgAccuracy + "%");
         writer.write("F1-Score (Macro) bb: " + avgFMeasure);
-
+        */
         writer.close();
     }
 }

@@ -52,8 +52,10 @@ public class arff2Bow {
 
         // Configuración del filtro StringToWordVector
         StringToWordVector filter = new StringToWordVector();
-        filter.setOutputWordCounts(true);
+        filter.setOutputWordCounts(true); //BOW
         filter.setLowerCaseTokens(true);
+        //filter.setTFTransform(true); // Activa TF
+        //filter.setIDFTransform(true); // Activa IDF
         filter.setDictionaryFileToSaveTo(new File(dictionaryPath));
 
         // Configurar tokenizador para eliminar caracteres especiales
@@ -84,7 +86,7 @@ public class arff2Bow {
         // Configurar FixedDictionaryStringToWordVector con el mismo tokenizador
         FixedDictionaryStringToWordVector filter = new FixedDictionaryStringToWordVector();
         filter.setDictionaryFile(new File(dictionaryPath));
-        filter.setOutputWordCounts(true);
+        filter.setOutputWordCounts(false);
 
         WordTokenizer tokenizer = new WordTokenizer();
         tokenizer.setDelimiters(" \r\n\t.,;:'\"()?![]@%&*/+-=<>{}^|#");

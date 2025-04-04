@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="kalitateEstimazioa">
+    <output-path>$PROJECT_DIR$/out/artifacts/kalitateEstimazioa</output-path>
+    <root id="archive" name="Weka_Proiektua.jar">
+      <element id="module-output" name="Weka_Proiektua" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/weka.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/netlib-java-1.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/commons-lang3-3.12.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/opencsv-5.10.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
