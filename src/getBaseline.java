@@ -8,12 +8,42 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 
+/**
+ * Klase honek eredu basiko bat (baseline) eraikitzen du SimpleLogistic erabiliz,
+ * machine learning proiektu baten oinarri gisa balio duena.
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Datu-multzoak kargatu (train eta dev FSS formatuan)</li>
+ *   <li>SimpleLogistic eredua entrenatu</li>
+ *   <li>Eredua ebaluatu dev multzoan</li>
+ *   <li>Emaitzak gorde (terminalean eta fitxategian)</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java getBaseline train_BOW_FSS.arff dev_BOW_FSS.arff ebaluazioaLR.txt</pre>
+ *
+ * <p>Ebaluazio-metrikak:</p>
+ * <ul>
+ *   <li>Klasearen araberako zehaztasuna (precision, recall, F1)</li>
+ *   <li>Nahasmen-matrizia</li>
+ *   <li>Errore metrikoak (MAE, RMSE)</li>
+ * </ul>
+ *
+ * <p>Oharrak:</p>
+ * <ul>
+ *   <li>SimpleLogistic: Logistika-erregresio sinple eta azkarra</li>
+ *   <li>Klase-atributua automatikoki detektatzen du (azken atributua)</li>
+ *   <li>Emaitzak bai terminalean bai fitxategian gordetzen dira</li>
+ * </ul>
+ */
+
 public class getBaseline {
 
     public static void main(String[] args) throws Exception {
 
         if (args.length != 3) {
-            System.out.println("Uso: java BaselineRegression <train.arff> <dev.arff> <ebaluazioLR.txt>");
+            System.out.println("Uso: java LogisticRegression <train_split_BOW_FSS.arff> <dev_split_BOW_FSS.arff> <ebaluazioLR.txt>");
             return;
         }
 
@@ -58,19 +88,19 @@ public class getBaseline {
             System.out.println("=== Medidas de Precisión ===");
             System.out.println(eval.toClassDetailsString());
 
-            writer.write("=== Dev modeloaren ebaluazioa ===");
+            writer.write("=== Dev modeloaren ebaluazioa ===" + "\n");
             writer.write(eval.toSummaryString());
-            writer.write("=== Nahasmen matrizea ===");
+            writer.write("=== Nahasmen matrizea ===" + "\n");
             writer.write(eval.toMatrixString());
-            writer.write("=== Precision ===");
+            writer.write("=== Precision ===" + "\n");
             writer.write(eval.toClassDetailsString());
 
             // Imprimir métricas de regresión
-            System.out.println("Error absoluto medio (MAE): " + eval.meanAbsoluteError());
-            System.out.println("Raíz del error cuadrático medio (RMSE): " + eval.rootMeanSquaredError());
+            System.out.println("\nError absoluto medio (MAE): " + eval.meanAbsoluteError());
+            System.out.println("\nRaíz del error cuadrático medio (RMSE): " + eval.rootMeanSquaredError());
 
-            writer.write("Mean Absolute Error (MAE): " + eval.meanAbsoluteError());
-            writer.write("Root Mean Squared Error (RMSE): " + eval.rootMeanSquaredError());
+            writer.write("\nMean Absolute Error (MAE): " + eval.meanAbsoluteError());
+            writer.write("\nRoot Mean Squared Error (RMSE): " + eval.rootMeanSquaredError());
             writer.close();
 
 

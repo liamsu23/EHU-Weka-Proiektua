@@ -8,6 +8,43 @@ import weka.core.converters.ConverterUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
+
+/**
+ * Klase honek SVM (Support Vector Machine) eredu baten hiperparametroen optimizazio aurreratua
+ * egiten du, kernel mota desberdinak alderatuz (RBF, Polinomial eta PUK) eta haien parametroak
+ * optimizatuz F1-macro metrikaren arabera.
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Datu-multzoak kargatu (train eta dev FSS formatuan)</li>
+ *   <li>Kernel mota desberdinen konbinazioak probatu:
+ *     <ul>
+ *       <li>RBF Kernel: gamma parametroarekin</li>
+ *       <li>Polinomial Kernel: degree parametroarekin</li>
+ *       <li>PUK Kernel: omega eta sigma parametroekin</li>
+ *     </ul>
+ *   </li>
+ *   <li>Eredu onena gorde eta bere parametroak fitxategian bildu</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java parametroEkorketaSVM_3 train_split_BOW_FSS.arff dev_split_BOW_FSS.arff SVM_3.model parameters_3.txt</pre>
+ *
+ * <p>Bilatzen diren parametroak:</p>
+ * <ul>
+ *   <li>C: Penalizazio-faktorea (1, 10, 100, 1000)</li>
+ *   <li>RBF: Gamma (0.01, 0.1, 1)</li>
+ *   <li>Polinomial: Degree (2, 3, 4)</li>
+ *   <li>PUK: Omega (0.01, 0.1, 1) eta Sigma (0.01, 0.1, 1)</li>
+ * </ul>
+ *
+ * <p>Outputak:</p>
+ * <ul>
+ *   <li>.model fitxategia: Entrenatutako SVM eredu hoberena</li>
+ *   <li>.txt fitxategia: Aurkikitako parametro optimoak (kernel mota barne)</li>
+ * </ul>
+ */
+
 public class parametroEkorketaSVM_3 {
     static double bestFMeasure = 0;
     static double bestC = 0, bestGamma = 0, bestDegree = 0, bestOmega = 0, bestSigma = 0;
@@ -47,7 +84,7 @@ public class parametroEkorketaSVM_3 {
             double[] sigmaValues = {0.01, 0.1, 1};
             Kernel[] kernels = {new RBFKernel(), new PolyKernel(), new Puk()};
 
-            System.out.println("🔍 Búsqueda de hiperparámetros");
+            System.out.println("Búsqueda de hiperparámetros");
             for (Kernel kernel : kernels) {
                 for (double c : cValues) {
                     if (kernel instanceof PolyKernel) {
@@ -77,7 +114,7 @@ public class parametroEkorketaSVM_3 {
             // Guardar el mejor modelo encontrado
             if (bestModel != null) {
                 SerializationHelper.write(outModelPath, bestModel);
-                System.out.println("✅ Modelo guardado en: " + outModelPath);
+                System.out.println("Modelo guardado en: " + outModelPath);
             }
 
             // Guardar los parámetros en un archivo

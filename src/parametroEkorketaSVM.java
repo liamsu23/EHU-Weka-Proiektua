@@ -9,6 +9,36 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 
+/**
+ * Klase honek SVM (Support Vector Machine) eredu baten hiperparametroen optimizazioa
+ * egiten du, F1-macro metrika erabiliz hoberenak diren C, gamma eta tolerance balioak
+ * bilatzeko.
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Datu-multzoak kargatu (train eta dev FSS formatuan)</li>
+ *   <li>Klase-banaketa aztertu (klase minoritarioa identifikatuz)</li>
+ *   <li>Hiperparametro-espazioa esploratu (C, gamma eta tolerance balioekin)</li>
+ *   <li>Eredu onena gorde eta bere parametroak fitxategian bildu</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java parametroEkorketaSVM train_split_BOW_FSS.arff dev_split_BOW_FSS.arff SVM.model parameters.txt</pre>
+ *
+ * <p>Bilatzen diren parametroak:</p>
+ * <ul>
+ *   <li>C: Penalizazio-faktorea (0.1, 1, 10, 100, 1000)</li>
+ *   <li>Gamma: RBF kernelaren parametroa (0.01, 0.1, 1, 10, 100)</li>
+ *   <li>Tolerance: Optimizazio-tolerentzia (1e-3, 1e-4, 1e-5)</li>
+ * </ul>
+ *
+ * <p>Gordetzen diren outputak:</p>
+ * <ul>
+ *   <li>.model fitxategia: Entrenatutako SVM eredu hoberena</li>
+ *   <li>.txt fitxategia: Aurkikitako parametro optimoak</li>
+ * </ul>
+ */
+
 public class parametroEkorketaSVM {
     public static void main(String[] args) throws Exception {
 
@@ -45,7 +75,7 @@ public class parametroEkorketaSVM {
 
             // Obtener el índice de la clase minoritaria
             int minorityClassIndex = getMinorityClassIndex(dataTrain);
-            System.out.println("\nÍndice de la clase minoritaria: " + minorityClassIndex);
+            System.out.println("\nIndice de la clase minoritaria: " + minorityClassIndex);
 
             // Parámetros a explorar
             double[] cValues = {0.1, 1, 10, 100, 1000};

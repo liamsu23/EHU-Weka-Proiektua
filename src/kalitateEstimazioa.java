@@ -10,6 +10,45 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 
+
+/**
+ * Klase honek SVM eredu baten kalitate-estimazio osoa egiten du, hainbat ebaluazio-metrika
+ * aplikatuz ereduaren errendimendua neurtzeko. Prozesuak honako urratsak hartzen ditu:
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Parametro optimoak kargatu aurrez definitutako fitxategitik (C, gamma, tolerance)</li>
+ *   <li>Train eta dev datu-multzoak kargatu eta bateratu</li>
+ *   <li>SVM eredua konfiguratu eta entrenatu datu guztiekin</li>
+ *   <li>3 ebaluazio-metrika desberdin erabili:
+ *     <ul>
+ *       <li>Berrezarpen-akatsa (Resubstitution Error)</li>
+ *       <li>10-fold ebaluazioa (Cross-Validation)</li>
+ *       <li>Hold-out ebaluazio errepikatuak</li>
+ *     </ul>
+ *   </li>
+ *   <li>Emaitzak fitxategian gorde</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java kalitateEstimazioa train_split_BOW_FSS.arff dev_split_BOW_FSS.arff SVMopt.model parametroak.txt ebaluazioa.txt</pre>
+ *
+ * <p>Ebaluazio-metrikak:</p>
+ * <ul>
+ *   <li>Zehaztasuna (Accuracy)</li>
+ *   <li>F1-Score (Macro)</li>
+ *   <li>Errepikapen anitzetako emaitzen batezbestekoa</li>
+ * </ul>
+ *
+ * <p>Ohar bereziak:</p>
+ * <ul>
+ *   <li>RBF kernela erabiltzen du SVMarentzat</li>
+ *   <li>Dev multzoa erabiltzen du Hold-out ebaluaziorako</li>
+ *   <li>5 errepikapen egiten ditu Hold-out ebaluaziorako</li>
+ *   <li>Klase-atributua automatikoki detektatzen du (azken atributua)</li>
+ * </ul>
+ */
+
 public class kalitateEstimazioa {
     public static void main(String[] args) throws Exception {
 

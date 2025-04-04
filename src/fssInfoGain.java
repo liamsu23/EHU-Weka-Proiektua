@@ -11,6 +11,30 @@ import weka.filters.unsupervised.attribute.Reorder;
 import java.io.File;
 import java.util.ArrayList;
 
+
+/**
+ * Klase honek Bag-of-Words (BoW) errepresentazioko datu-multzoetan informazio irabaziaren (InfoGain)
+ * bidezko ezaugarri-hautapena egiten du, dimensionalitatea murriztuz.
+ *
+ * <p>Funtzionamendu nagusia:</p>
+ * <ol>
+ *   <li>Entrenamendu-datuak prozesatu eta ezaugarri garrantzitsuenak hautatu (InfoGain)</li>
+ *   <li>Hautatutako ezaugarrien arabera dev eta test multzoak egokitu</li>
+ *   <li>Datuen kontzistentzia mantendu train, dev eta test multzoetan</li>
+ * </ol>
+ *
+ * <p>Erabilera:</p>
+ * <pre>java fssInfoGain train_BOW.arff dev_BOW.arff test_BOW.arff train_BOW_FSS.arff dev_BOW_FSS.arff test_BOW_FSS.arff</pre>
+ *
+ * <p>Ezaugarri teknikoak:</p>
+ * <ul>
+ *   <li>InfoGain algoritmoa: Ezaugarrien garrantzia neurtzen du klasearekiko informazioa kontuan hartuta</li>
+ *   <li>Dimensionalitate-murrizketa: hasteko, 1000 atributu garrantzitsuenak mantentzen ditu (gero beste atributu kopuruekin konfigura daiteke)</li>
+ *   <li>Kontsistentzia: Dev/Test multzoek train-eko atributu-zerrenda bera erabiltzen dute</li>
+ *   <li>Klasearen kudeaketa: "Cause_of_Death" atributua automatikoki detektatzen du</li>
+ * </ul>
+ */
+
 public class fssInfoGain {
     public static void main(String[] args) throws Exception {
         // Verificar que se han pasado los argumentos correctamente
