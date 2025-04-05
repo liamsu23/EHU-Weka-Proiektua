@@ -42,15 +42,17 @@ public class getBaseline {
 
     public static void main(String[] args) throws Exception {
 
-        if (args.length != 3) {
-            System.out.println("Uso: java LogisticRegression <train_split_BOW_FSS.arff> <dev_split_BOW_FSS.arff> <ebaluazioLR.txt>");
+        if (args.length != 5) {
+            System.out.println("Uso: java LogisticRegression <train_split_BOW_FSS.arff> <dev_split_BOW_FSS.arff> <test_BOW_FSS.arff> <ebaluazioLR.txt> <predikzioLR.txt");
             return;
         }
 
         try {
             String trainPath = args[0];
             String devPath= args[1];
-            String outEbaluazioakPath = args[2];
+            String testPath = args[2];
+            String outEbaluazioakPath = args[3];
+            String outPredictionsPath = args[4];
 
             // Cargar datasets
             ConverterUtils.DataSource sourceTrain = new ConverterUtils.DataSource(trainPath);
@@ -59,12 +61,18 @@ public class getBaseline {
             ConverterUtils.DataSource sourceDev = new ConverterUtils.DataSource(devPath);
             Instances dataDev = sourceDev.getDataSet();
 
+            ConverterUtils.DataSource sourceTest = new ConverterUtils.DataSource(testPath);
+            Instances dataTest = sourceDev.getDataSet();
+
             // Establecer la variable objetivo (última columna)
             if (dataTrain.classIndex() == -1) {
                 dataTrain.setClassIndex(dataTrain.numAttributes() - 1);
             }
             if (dataDev.classIndex() == -1) {
                 dataDev.setClassIndex(dataDev.numAttributes() - 1);
+            }
+            if (dataTest.classIndex() == -1) {
+                dataTest.setClassIndex(dataDev.numAttributes() - 1);
             }
 
             // 3. Crear el modelo de Regresión Logística
@@ -103,6 +111,22 @@ public class getBaseline {
             writer.write("\nRoot Mean Squared Error (RMSE): " + eval.rootMeanSquaredError());
             writer.close();
 
+
+            BufferedWriter predWriter = new BufferedWriter(new FileWriter(outPredictionsPath));
+            predWriter.write("Instancia,Predicción\n");
+
+            // Realizar predicciones para cada instancia en el conjunto test
+            for (int i = 0; i < dataTest.numInstances(); i++) {
+                // Obtener la instancia a predecir
+                double classLabel = model.classifyInstance(dataTest.instance(i));
+
+                // Convertir el número de clase a su nombre
+                String className = dataTest.classAttribute().value((int) classLabel);
+
+                // Escribir el ID de la instancia y la clase predicha en el archivo de salida
+                predWriter.write(i + "," + className + "\n");
+            }
+            predWriter.close();
 
         } catch (Exception e) {
             e.printStackTrace();
