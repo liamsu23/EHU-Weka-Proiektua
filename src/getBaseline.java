@@ -18,6 +18,7 @@ import java.io.FileWriter;
  *   <li>SimpleLogistic eredua entrenatu</li>
  *   <li>Eredua ebaluatu dev multzoan</li>
  *   <li>Emaitzak gorde (terminalean eta fitxategian)</li>
+ *   <li>Predikzioak gorde fitxategian</li>
  * </ol>
  *
  * <p>Erabilera:</p>
