@@ -44,7 +44,7 @@ import java.io.File;
  * datuak prozesatzeko eta manipulatzeko.</p>
  */
 
-public class getSplit {
+public class getSplitBiasToUniformClass {
     public static void main(String[] args) throws Exception {
         // Validación de argumentos
         if (args.length != 3) {
