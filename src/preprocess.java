@@ -1,111 +1,97 @@
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
-import java.io.*;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.util.*;
-
+import weka.attributeSelection.InfoGainAttributeEval;
+import weka.attributeSelection.Ranker;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.converters.ArffSaver;
-import weka.core.tokenizers.WordTokenizer;
 import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.FixedDictionaryStringToWordVector;
-import weka.filters.unsupervised.attribute.Reorder;
-import weka.filters.unsupervised.attribute.StringToWordVector;
+import weka.filters.supervised.attribute.AttributeSelection;
+import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.instance.Randomize;
 import weka.filters.unsupervised.instance.RemovePercentage;
+import weka.filters.supervised.instance.Resample;
+import weka.core.tokenizers.WordTokenizer;
+import weka.filters.unsupervised.attribute.StringToWordVector;
+import weka.filters.unsupervised.attribute.FixedDictionaryStringToWordVector;
+import weka.filters.unsupervised.attribute.Reorder;
+
+import java.io.*;
+import java.util.*;
+
 
 public class preprocess {
     public static void main(String[] args) throws IOException {
         // Argumentuak ondo pasatu diren konprobatu
-        if (args.length != 10) {
-            System.out.println("Erabilera: java preproces <train_csv> <test_csv> <train_RAW.arff> <test_RAW.arff> <train_Split.arff> <dev_Split.arff> <hiztegia.txt> <train_split_BOW.arff> <dev_split_BOW.arff> <test_BOW.arff>" );
+        if (args.length != 13) {
+            System.out.println("Erabilera: java preprocess <train_csv> <test_csv> <train_RAW.arff> <test_RAW.arff> <train_split_RAW.arff> <dev_split_RAW.arff> <dictionary.txt> <train_split_BOW.arff> <dev_split_BOW.arff> <test_BOW.arff> <train_split_BOW_FSS.arff> <dev_split_BOW_FSS.arff> <test_BOW_FSS.arff>");
             return;
         }
-        String inTrainCSVPath = args[0]; // (in) CSV fitxategiaren helbidea, train
-        String inTestCSVPath = args[1]; // (in) CSV fitxategiaren helbidea, test
-        String outTrainARFFPath = args[2]; // (out) ARFF fitxategiaren helbide, train
-        String outTestARFFPath = args[3]; // (out) ARFF fitxategiaren helbide, test
+        // Argumentos para getARFF
+        String inTrainCSVPath = args[0];
+        String inTestCSVPath = args[1];
+        String outTrainARFFPath = args[2];
+        String outTestARFFPath = args[3];
+
+        // Argumentos para getSplit
+        //String inTrainPath = args[0]; el mismo que args[2]
         String outTrainSplitPath = args[4];
         String outDevSplitPath = args[5];
+
+        // Argumentos para arff2bow
+        //String inTrainRAWPath = args[0]; el mismo que args[4]
+        //String inDevRAWPath = args[1]; el mismo que args[5]
+        //String inTestRAWPath = args[2]; el mismo que args[3]
         String outDictionaryPath = args[6];
         String outTrainBOWPath = args[7];
         String outDevBOWPath = args[8];
         String outTestBOWPath = args[9];
 
+        // Argumentos para fssInfoGain
+        //String inTrainBOWPath = args[0]; el mismo que args[7]
+        //String inDevBOWPath = args[1]; el mismo que args[8]
+        //String inTestBOWPath = args[2]; el mismo que args[9]
+        String outTrainBOWFSSPath = args[10];
+        String outDevBOWFSSPath = args[11];
+        String outTestBOWFSSPath = args[12];
+
         Map<String, String> labelMapping = loadLabelMapping();
 
         try {
-
-            //getARFF
-            // 1. train prozesatu erabilitako mailak eta tokiak lortzeko
+            // === PASO 1: Convertir CSV a ARFF (getARFF) ===
+            System.out.println("=== PASO 1/4: Convirtiendo CSV a ARFF ===");
             Set<String> trainCategories = new HashSet<>();
             Set<String> places = new HashSet<>();
-            processCSV(inTrainCSVPath, labelMapping, false, trainCategories, places);
 
-            // 2. Mapeatutako maila guztiak barne daudela ziurtatu
+            // Procesar train para obtener categorías y lugares
+            processCSV(inTrainCSVPath, labelMapping, false, trainCategories, places);
             trainCategories.addAll(labelMapping.values());
 
-            // 3. Fitxategiak bihurtu maila berdinak erabiliz
+            // Convertir a ARFF
             convertARFF(inTrainCSVPath, outTrainARFFPath, labelMapping, false, places, trainCategories);
             convertARFF(inTestCSVPath, outTestARFFPath, labelMapping, true, places, trainCategories);
 
-            System.out.println("ARFF fitxategiak zuzen sortu dira.");
+            // === PASO 2: Dividir datos (getSplit) ===
+            System.out.println("\n=== PASO 2/4: Dividiendo dataset de entrenamiento ===");
+            splitData(outTrainARFFPath, outTrainSplitPath, outDevSplitPath);
 
-            // getSplit
+            // === PASO 3: Bag-of-Words (arff2bow) ===
+            System.out.println("\n=== PASO 3/4: Creando representación Bag-of-Words ===");
+            processBOW(outTrainSplitPath, outDevSplitPath, outTestARFFPath, outDictionaryPath, outTrainBOWPath, outDevBOWPath, outTestBOWPath);
 
-            DataSource source = new DataSource(outTrainARFFPath);
-            Instances data = source.getDataSet();
-            data.setClassIndex(data.numAttributes() - 1);
+            // === PASO 4: Selección de características (fssInfoGain) ===
+            System.out.println("\n=== PASO 4/4: Selección de características con InfoGain ===");
+            featureSelection(outTrainBOWPath, outDevBOWPath, outTestBOWPath, outTrainBOWFSSPath, outDevBOWFSSPath, outTestBOWFSSPath);
 
-            Randomize randomFilter = new Randomize();
-            randomFilter.setRandomSeed(1);
-            randomFilter.setInputFormat(data);
-            Instances randomData = Filter.useFilter(data, randomFilter);
-
-            // 2. Primero obtener TRAIN (80%)
-            RemovePercentage removeFilter = new RemovePercentage();
-            removeFilter.setInputFormat(data);
-            removeFilter.setPercentage(80); // Eliminar 20%
-            removeFilter.setInvertSelection(true); // Conservar 80%
-            Instances trainData = Filter.useFilter(randomData, removeFilter);
-
-            // 3. Luego obtener DEV (20%) del original
-            removeFilter = new RemovePercentage(); // Reiniciar filtro
-            removeFilter.setInputFormat(data);
-            removeFilter.setPercentage(80); // Eliminar 80%
-            removeFilter.setInvertSelection(false); // Conservar 20%
-            Instances devData = Filter.useFilter(randomData, removeFilter);
-
-            // 5. Guardar
-            ArffSaver saver = new ArffSaver();
-            saver.setInstances(trainData);
-            saver.setFile(new File(outTrainSplitPath));
-            saver.writeBatch();
-
-            saver.setInstances(devData);
-            saver.setFile(new File(outDevSplitPath));
-            saver.writeBatch();
-
-            //arff2BoW
-            Instances trainBOWData = processTrainingData(outTrainSplitPath, outDictionaryPath, outTrainBOWPath);
-
-            processTestData(outDevSplitPath, outDevBOWPath, outDictionaryPath, trainBOWData);
-
-            processTestData(outTestARFFPath, outTestBOWPath, outDictionaryPath, trainBOWData);
-
-            System.out.println("Prozesua zuzenki burutu da.");
-
-        }
-        catch (Exception e) {
+            System.out.println("\n¡Proceso completado con éxito!");
+        } catch (Exception e) {
             e.printStackTrace();
-            System.out.println("ERROR");
+            System.out.println("ERROR durante el procesamiento");
         }
     }
 
+    // ============== getARFF Methods ==============
     private static void processCSV(String csvFile, Map<String, String> labelMapping, boolean isTest, Set<String> categories, Set<String> places) throws IOException, CsvException {
         CSVReader reader = new CSVReader(new FileReader(csvFile));
         List<String[]> data = reader.readAll();
@@ -153,7 +139,6 @@ public class preprocess {
         writer.close();
     }
 
-    // header idazteko metodoa
     private static void writeHeaderARFF(FileWriter fw, Set<String> places, Set<String> generalCategories) throws IOException {
         try {
             fw.write("@RELATION muertes_causas\n\n");
@@ -170,7 +155,6 @@ public class preprocess {
         }
     }
 
-    // narrative garbitzeko metodoa
     private static String cleanNarrative(String text) {
         return text.replace("#", "").replace("?", "").replace("!", "").replace(",", "")
                 .replace("\"", "").replace("'", "").replace(";", "").replace(":", "")
@@ -179,7 +163,6 @@ public class preprocess {
                 .trim();
     }
 
-    // Hiltze arrazoien multzokatzea kargatu
     private static Map<String, String> loadLabelMapping() {
         Map<String, String> labelMapping = new HashMap<>();
 
@@ -269,7 +252,52 @@ public class preprocess {
         return labelMapping;
     }
 
-    // arff2BoW
+    // ============== getSplit Methods ==============
+    private static void splitData(String inputARFF, String outTrain, String outDev) throws Exception {
+        DataSource source = new DataSource(inputARFF);
+        Instances data = source.getDataSet();
+        data.setClassIndex(data.numAttributes() - 1);
+
+        // Balancear clases
+        Resample resample = new Resample();
+        resample.setBiasToUniformClass(1.0);
+        resample.setInputFormat(data);
+        Instances balancedData = Filter.useFilter(data, resample);
+
+        // Aleatorizar
+        Randomize randomize = new Randomize();
+        randomize.setInputFormat(balancedData);
+        Instances randomizedData = Filter.useFilter(balancedData, randomize);
+
+        // Split 80/20
+        RemovePercentage splitFilter = new RemovePercentage();
+        splitFilter.setPercentage(80);
+
+        splitFilter.setInvertSelection(true);
+        splitFilter.setInputFormat(randomizedData);
+        Instances trainData = Filter.useFilter(randomizedData, splitFilter);
+
+        splitFilter.setInvertSelection(false);
+        Instances devData = Filter.useFilter(randomizedData, splitFilter);
+
+        saveARFF(trainData, outTrain);
+        saveARFF(devData, outDev);
+    }
+
+    // ============== arff2bow Methods ==============
+    private static void processBOW(String trainARFF, String devARFF, String testARFF, String dictPath, String outTrain, String outDev, String outTest) throws Exception {
+        System.out.println("Procesando train_split_RAW.arff...");
+        Instances trainBOWData = processTrainingData(trainARFF, dictPath, outTrain);
+
+        System.out.println("Procesando dev_split_RAW.arff...");
+        processTestData(devARFF, outDev, dictPath, trainBOWData);
+
+        System.out.println("Procesando test_RAW.arff...");
+        processTestData(testARFF, outTest, dictPath, trainBOWData);
+
+        System.out.println("Proceso BOW finalizado con éxito.");
+    }
+
     private static Instances processTrainingData(String trainRAWPath, String dictionaryPath, String trainBOWPath) throws Exception {
         DataSource source = new DataSource(trainRAWPath);
         Instances trainRAWData = source.getDataSet();
@@ -339,9 +367,111 @@ public class preprocess {
         }
     }
 
+    // ============== fssInfoGain Methods ==============
+    private static void featureSelection(String trainBOW, String devBOW, String testBOW, String outTrain, String outDev, String outTest) throws Exception {
+        System.out.println("Procesando train_split_BOW.arff...");
+        Instances trainBOWFSSData = processTrainingDataFSS(trainBOW, outTrain);
+
+        System.out.println("Procesando dev_split_BOW.arff...");
+        processTestDataFSS(devBOW, outDev, trainBOWFSSData);
+
+        System.out.println("Procesando test_BOW.arff...");
+        processTestDataFSS(testBOW, outTest, trainBOWFSSData);
+
+        System.out.println("Proceso de selección de características completado.");
+    }
+
+    private static Instances processTrainingDataFSS(String inTrainPath, String outTrainPath) throws Exception {
+        // Cargar datos de entrenamiento
+        DataSource source = new DataSource(inTrainPath);
+        Instances data = source.getDataSet();
+
+        // Establecer atributo clase
+        if (data.classIndex() == -1) {
+            data.setClassIndex(data.attribute("Cause_of_Death").index());
+        }
+
+        System.out.println("Número de atributos antes de la selección: " + data.numAttributes());
+
+        // Configurar y aplicar filtro de selección de atributos
+        AttributeSelection filter = createFeatureSelector();
+        filter.setInputFormat(data);
+        Instances selectedData = Filter.useFilter(data, filter);
+
+        System.out.println("Número de atributos después de la selección: " + selectedData.numAttributes());
+
+        // Guardar datos procesados
+        saveARFF(selectedData, outTrainPath);
+
+        return selectedData;
+    }
+
+    private static void processTestDataFSS(String inTestPath, String outTestPath, Instances trainData) throws Exception {
+        // Cargar datos de test/dev
+        DataSource source = new DataSource(inTestPath);
+        Instances testData = source.getDataSet();
+
+        // Asegurar que el atributo clase está establecido (si existe)
+        if (testData.attribute("Cause_of_Death") != null) {
+            testData.setClassIndex(testData.attribute("Cause_of_Death").index());
+        }
+
+        // Ajustar datos de test para que coincidan con el formato de entrenamiento
+        Instances adjustedData = adjustHeaders(testData, trainData);
+
+        // Guardar datos procesados
+        saveARFF(adjustedData, outTestPath);
+    }
+
+    private static AttributeSelection createFeatureSelector() {
+        AttributeSelection filter = new AttributeSelection();
+        InfoGainAttributeEval evaluator = new InfoGainAttributeEval();
+        Ranker search = new Ranker();
+        search.setNumToSelect(1000); // Número de atributos a seleccionar
+
+        filter.setEvaluator(evaluator);
+        filter.setSearch(search);
+
+        return filter;
+    }
+
+    private static Instances adjustHeaders(Instances testData, Instances trainData) throws Exception {
+        // 1. Eliminar atributos que están en test pero no en train
+        ArrayList<Integer> indicesToRemove = new ArrayList<>();
+        for (int i = 0; i < testData.numAttributes(); i++) {
+            if (trainData.attribute(testData.attribute(i).name()) == null) {
+                indicesToRemove.add(i);
+            }
+        }
+
+        if (!indicesToRemove.isEmpty()) {
+            Remove removeFilter = new Remove();
+            removeFilter.setAttributeIndicesArray(indicesToRemove.stream().mapToInt(i -> i).toArray());
+            removeFilter.setInvertSelection(false);
+            removeFilter.setInputFormat(testData);
+            testData = Filter.useFilter(testData, removeFilter);
+        }
+
+        // 2. Reordenar atributos para que coincidan con train
+        StringBuilder order = new StringBuilder();
+        for (int i = 0; i < trainData.numAttributes(); i++) {
+            int idx = testData.attribute(trainData.attribute(i).name()).index() + 1;
+            order.append(idx).append(",");
+        }
+        order.deleteCharAt(order.length() - 1); // Eliminar última coma
+
+        Reorder reorderFilter = new Reorder();
+        reorderFilter.setAttributeIndices(order.toString());
+        reorderFilter.setInputFormat(testData);
+        testData = Filter.useFilter(testData, reorderFilter);
+
+        return testData;
+    }
+
+    // ============== Utility Methods ==============
     private static Instances moveClassToLast(Instances data) throws Exception {
         if (data.classIndex() == -1) {
-            throw new IllegalStateException("Klasea ez dagi zehaztuta.");
+            throw new IllegalStateException("Class attribute not set");
         }
 
         StringBuilder indices = new StringBuilder();
@@ -352,9 +482,16 @@ public class preprocess {
         }
         indices.append(data.classIndex() + 1);
 
-        Reorder reorderFilter = new Reorder();
-        reorderFilter.setAttributeIndices(indices.toString());
-        reorderFilter.setInputFormat(data);
-        return Filter.useFilter(data, reorderFilter);
+        Reorder reorder = new Reorder();
+        reorder.setAttributeIndices(indices.toString());
+        reorder.setInputFormat(data);
+        return Filter.useFilter(data, reorder);
+    }
+
+    private static void saveARFF(Instances data, String path) throws Exception {
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(data);
+        saver.setFile(new File(path));
+        saver.writeBatch();
     }
 }
