@@ -4,10 +4,12 @@
 3.mailako Erabakiak Hartzeko Euskarri Sistemak irakasgaian burututako proiektua. Testu meatzaritzako sailkapen gainbegiratuko (train eta dev) eta ez gainbegiratu (test) atazen inguruan zenbait funtzionalitate jorratzean datza.
 Horretarako, java eta weka-ko liburutegiak erabili ditugu. Gure kasuan, paziente askoren hainbat datu-mediku emanda (id, moduloa, adina, sexua, lekua, azalpen-testua, klasea), hauek hilko diren gaixotasunaz iragarriko du. 
 
+
 ##Parte-hartzaileak
 - Liam Suárez
 - María Briones
 - Ainhoa Sánchez
+
 
 ##Nola exekutatu
 Proiektuak ondo funtzionatzeko, lehenik eta behin entregan datozen hiru liburutegiak deskargatu beharko dira:
@@ -59,7 +61,7 @@ Proiektu honetan, funtzionalitate bezain beste exekutagarri daude. Gainera, orde
 
 3. Iragarpenak:
    
-  5. sailkapena.jar: Test multzoko iragarpenak egingo dituen programa da.
+  1. sailkapena.jar: Test multzoko iragarpenak egingo dituen programa da.
      ```bash
        java -jar sailkapena.jar SVMopt.model test_BOW_FSS.arff  predictions.txt
      ```
